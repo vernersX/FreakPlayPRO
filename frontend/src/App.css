@@ -1,0 +1,21 @@
+.app-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  max-width: 500px;
+}
+
+.app-main {
+  width: 100%;
+  padding-bottom: 100px;
+  background-image: url('/Users/eriks/Desktop/BetApp/frontend/src/imgs/background 2.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  position: relative;
+  padding-top: 65px;
+  /* border: 1px solid white; */
+  box-sizing: border-box;
+}

@@ -1,0 +1,88 @@
+/* client/src/components/Marketplace/MarketplacePage.module.css */
+.marketplacePage {
+    padding: 20px;
+}
+
+.title {
+    font-size: 28px;
+    margin: 0 0 20px;
+}
+
+.itemList {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.itemFilterContainer {
+    width: 100%;
+    display: flex;
+    gap: 10px;
+    margin: 0 0 20px;
+}
+
+.itemContainer {
+    padding: 15px;
+    border-radius: 12px;
+    background: url('../../imgs/MarketItemBG.png') center no-repeat;
+    background-size: cover;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: .2s;
+}
+
+.itemContainer:hover {
+    box-shadow: rgba(238, 19, 19, 1) 0px 0px 20px;
+}
+
+.itemTopContainer {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin: 15px 0;
+}
+
+.itemImage {
+    width: 60%;
+    height: auto;
+    margin: 20px 0;
+}
+
+.itemContainer h3 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.itemContainer p {
+    margin: 5px 0;
+    text-align: start;
+    width: 100%;
+}
+
+.itemContainer button {
+    font-family: "Montserrat", sans-serif;
+    margin-top: 10px;
+    width: 85%;
+    background-color: #ff3344;
+    box-shadow: rgba(238, 19, 19, 1) 0px 0px 20px;
+    transition: opacity 0.2s ease;
+    outline: none;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    background:
+        /* top layer (solid interior) */
+        linear-gradient(#ff3344, #ff3344) padding-box,
+        /* bottom layer (gradient border) */
+        linear-gradient(to bottom right, #ff7f7f, #7e2a36) border-box;
+    background-clip: padding-box, border-box;
+    color: #fff;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0.75rem 1.5rem;
+    box-sizing: border-box;
+    box-shadow: 0 0 20px rgba(255, 51, 68, 0.5);
+}

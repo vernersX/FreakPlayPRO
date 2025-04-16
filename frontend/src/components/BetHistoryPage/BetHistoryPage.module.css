@@ -1,0 +1,42 @@
+/* client/src/components/BetsPage/BetsPage.module.css */
+.betsPageContainer {
+    padding: 1rem;
+}
+
+.loading {
+    font-size: 1.2rem;
+    text-align: center;
+    padding: 2rem;
+}
+
+.title {
+    margin: 0;
+    margin: 15px 0 30px;
+}
+
+.navLinks {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.navButton {
+    padding: 0.5rem 1rem;
+    background-color: #7a746c67;
+    color: white;
+    border: none;
+    text-decoration: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.selected {
+    font-weight: 600;
+    background-color: rgba(248, 98, 161, 0.2);
+    border: 1px solid #ff142b;
+    color: #fff;
+    box-shadow: 0 0 12px 6px rgba(226, 17, 55, 0.6);
+}

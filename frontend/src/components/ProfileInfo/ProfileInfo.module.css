@@ -1,0 +1,82 @@
+.profileContainer {
+    max-width: 500px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    padding: 3px 20px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    background: linear-gradient(91.91deg, rgb(82, 28, 44) 0.46%, rgb(43, 25, 49) 94.16%);
+    z-index: 100;
+}
+
+.profileLoading {
+    text-align: center;
+    color: #666;
+}
+
+.profileError {
+    text-align: center;
+    color: red;
+}
+
+.logoContainer {
+    width: 15%;
+}
+
+.logoImg {
+    width: 100%;
+    border-radius: 25%;
+}
+
+.headerProfileContainer {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.coinsContainer {
+    display: flex;
+    flex-direction: row;
+    padding: 6px 10px;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    background-color: #7a746c67;
+    border-radius: 9px;
+}
+
+.coinsContainer p {
+    margin: 0;
+    font-size: 18px;
+}
+
+.coinPic {
+    width: 50%;
+    height: auto
+}
+
+.profilePicContainer {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.profileImg {
+    box-sizing: border-box;
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    background: linear-gradient(white, white) padding-box,
+        linear-gradient(135deg, #C77946 0%, #E6B422 100%) border-box;
+}

@@ -1,0 +1,122 @@
+/* client/src/components/BetCard/BetCard.module.css */
+.betCardContainer {
+    outline: 1px solid transparent;
+    border-radius: 8px;
+    padding: 1rem 1rem 2rem;
+    margin: 1rem 0;
+    background-color: #ffffff1c;
+    display: flex;
+    gap: 20px;
+    flex-direction: column;
+    color: rgb(255, 255, 255);
+    box-sizing: border-box;
+    transition: .3s;
+    position: relative;
+    z-index: 0;
+}
+
+.betCardContainer:hover {
+    outline: 1px solid #ff142b;
+    box-shadow: 0 0 12px 6px rgba(226, 17, 55, 0.6);
+}
+
+.betCardTop {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.matchInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.teamContainer {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+@keyframes pulsateShadow {
+    0% {
+        text-shadow: 0 0 5px rgba(255, 0, 0, 0.6);
+    }
+
+    50% {
+        text-shadow: 0 0 15px rgba(255, 0, 0, 1);
+    }
+
+    100% {
+        text-shadow: 0 0 5px rgba(255, 0, 0, 0.6);
+    }
+}
+
+.fadingText {
+    animation: pulsateShadow 2s infinite ease-in-out;
+}
+
+.teamContainer p {
+    font-weight: 600;
+}
+
+.teamLogoContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    padding: 10px;
+    background: #212334;
+    border-radius: 50%;
+    border: 2px solid #3f4256
+}
+
+.vsp {
+    margin-left: 65px;
+    font-size: 24px;
+}
+
+.cardInfo {
+    position: absolute;
+    bottom: 2.2rem;
+    right: 1rem;
+}
+
+.cardDetails {
+    display: flex;
+    align-items: center;
+}
+
+.cardImage {
+    width: 50px;
+    height: auto;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
+
+.statusWon {
+    background: rgb(42, 99, 243);
+    width: calc(100% + 2rem);
+    margin: 0 0 -2rem -1rem;
+    border-radius: 0px 0px 8px 8px;
+    padding: 5px;
+    box-sizing: border-box;
+    text-align: center;
+    font-weight: 500;
+}
+
+.statusLost {
+    background: #ff142b;
+    width: calc(100% + 2rem);
+    margin: 0 0 -2rem -1rem;
+    border-radius: 0px 0px 8px 8px;
+    padding: 5px;
+    box-sizing: border-box;
+    text-align: center;
+    font-weight: 500;
+}
+
+p {
+    margin: 0;
+}

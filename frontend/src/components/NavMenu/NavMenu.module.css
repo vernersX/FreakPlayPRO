@@ -1,0 +1,70 @@
+/* client/src/components/NavMenu/NavMenu.module.css */
+.outerContainer {
+    width: 100%;
+    max-width: 500px;
+    position: fixed;
+    bottom: 20px;
+    left: 0;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.navMenu {
+    width: 95%;
+    height: 100%;
+    background: linear-gradient(223.13deg, rgba(82, 28, 44, 0.9) -34.81%, rgba(43, 25, 49, 0.9) 133.85%);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 1000;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.navItem {
+    position: relative;
+    width: 20%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1rem;
+    padding: 0.5rem;
+    transition: color 0.3s;
+    overflow: none;
+    transition: background-color 0.3s;
+}
+
+.navItem:active {
+    background-color: rgb(192, 39, 44);
+}
+
+.navItem svg {
+    width: 35px;
+    height: 35px;
+}
+
+.navItem.selected {
+    color: #ffffff;
+}
+
+.navItem.selected::before {
+    content: "";
+    position: absolute;
+    pointer-events: none;
+    z-index: -1;
+    bottom: 0;
+    left: 50%;
+    width: 0px;
+    height: 0px;
+    border-radius: 50%;
+    box-shadow: 0 0px 9px 5px rgb(255, 144, 144), 0 -5px 20px 15px rgb(247, 56, 63);
+}

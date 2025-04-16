@@ -1,0 +1,9 @@
+.cardItem {
+    border: black 1px solid;
+    border-radius: 9px;
+    overflow: auto;
+}
+
+.cardImg {
+    width: 100%;
+}

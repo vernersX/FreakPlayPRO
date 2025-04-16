@@ -1,0 +1,79 @@
+.cardContainer {
+    background: linear-gradient(to bottom,
+            rgba(66, 35, 71, 0.14) 40%,
+            #1b1444 100%),
+        url('../../imgs/UEFAbg.jpg');
+
+    /* Make sure it doesn’t repeat and fills the container fully */
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+
+    /* If you have a border-radius, allow the image to clip inside */
+    border-radius: 5px;
+    overflow: hidden;
+    /* Helps ensure no 1px gap if you have rounding */
+
+    /* Box sizing so padding/border are included in total height/width */
+    box-sizing: border-box;
+
+    display: flex;
+    flex-direction: column;
+    min-width: 85%;
+    border-radius: 5px;
+    color: rgb(0, 0, 0);
+    font-weight: 700;
+    gap: 10px;
+    padding: 10px;
+}
+
+.timeContainer {
+    width: fit-content;
+    background-color: #7a746c67;
+    border-radius: 6px;
+    margin-bottom: 30px;
+    padding: 3px;
+    color: white;
+}
+
+.timeContainer p {
+    margin: 0;
+}
+
+.teamContainer {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+}
+
+.teamLogoContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    padding: 10px;
+    background: #212334;
+    border-radius: 50%;
+    border: 2px solid #3f4256
+}
+
+.teamInfoContainer {
+    display: flex;
+    flex-direction: column;
+}
+
+.teamOdds {
+    width: fit-content;
+    padding: 2px;
+    background-color: rgb(41, 132, 59);
+    border-radius: 5px;
+    border: 2px solid rgb(54, 183, 54);
+    color: rgb(255, 255, 255);
+}
+
+.teamName {
+    margin: 0;
+    color: rgb(255, 255, 255);
+}

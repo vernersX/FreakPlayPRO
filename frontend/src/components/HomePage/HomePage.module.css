@@ -1,0 +1,139 @@
+/* client/src/pages/MainPage.module.css */
+
+.mainPageContainer {
+    padding: 1rem;
+    min-height: 100vh;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.taskContainer {
+    width: 100%;
+    height: 110px;
+    display: flex;
+    flex-direction: row;
+    gap: 3%;
+    align-items: center;
+    justify-content: center;
+    margin: 15px 0 50px;
+}
+
+.titleContainer {
+    margin: 20px 0;
+}
+
+.title {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 24px;
+    margin: 0;
+}
+
+.taskItem {
+    width: 30%;
+    height: 100%;
+    background-color: #7a746c67;
+    /* background: linear-gradient(134.6deg, rgba(222, 40, 8, 0.444) 4.06%, rgba(19, 24, 42, 0.2) 96.16%); */
+    /* background: linear-gradient(91.91deg, rgba(82, 28, 44, 0.9) 0.46%, rgba(43, 25, 49, 0.9) 94.16%); */
+    padding: 10px 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    font-size: 14px;
+    border-radius: 20px;
+    font-weight: 600;
+    border: 2px solid transparent;
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+    background-clip: padding-box;
+    text-align: center;
+}
+
+.taskItem.selected {
+    border: 2px solid rgba(229, 29, 29, 0.8);
+    box-shadow: 0 0 12px 4px rgba(246, 6, 30, 0.3);
+}
+
+
+.navLinks {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    align-items: center;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 15px 0;
+    margin-right: -10px;
+}
+
+.navLinks a {
+    text-decoration: none;
+}
+
+.navLinks::-webkit-scrollbar {
+    display: none;
+}
+
+.navButton {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    background-color: #7a746c67;
+    color: white;
+    border: none;
+    text-decoration: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.selected {
+    color: #fff;
+    font-weight: 600;
+    background-color: rgba(248, 151, 98, 0.2);
+    border: 1px solid #ff142b;
+    box-shadow: 0 0 12px 6px rgba(226, 17, 55, 0.6); 
+}
+
+.gamesList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.gameCard {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    padding: 1rem;
+    width: 220px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+}
+
+.loading {
+    text-align: center;
+    margin-top: 2rem;
+    font-size: 1.2rem;
+    color: #555;
+}
+
+.liveAiContainer {
+    width: 100%;
+}
+
+.liveAiContainer img {
+    width: 100%;
+}
+
+.leaderboardContainer {
+    width: 100%;
+}
+
+.leaderboardContainer img {
+    width: 100%;
+}

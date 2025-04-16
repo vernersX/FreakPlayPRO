@@ -1,0 +1,36 @@
+/* client/src/components/SportsListPage/SportsListPage.module.css */
+.sportsListContainer {
+    padding: 1rem;
+}
+
+.title {
+    margin-bottom: 1rem;
+}
+
+.sportsGrid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.sportItem {
+    width: 100px;
+    height: 100px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.sportItem:hover {
+    background-color: #f0f0f0;
+}
+
+.sportIcon {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+}

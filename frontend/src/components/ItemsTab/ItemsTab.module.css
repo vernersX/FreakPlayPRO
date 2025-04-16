@@ -1,0 +1,28 @@
+.itemsGrid {
+    display: grid;
+    grid-template-columns: 25% 25% 25%;
+    width: 100%;
+    justify-content: center;
+    gap: 30px;
+}
+
+.itemContainer {
+    margin-top: 25px;
+    position: relative;
+}
+
+.itemImage {
+    width: 100%;
+    height: auto;
+}
+
+.itemQuantity {
+    background: rgba(0, 0, 0, 0.56);
+    margin: 0;
+    font-weight: bold;
+    padding: 5px;
+    border-radius: 10px;
+    position: absolute;
+    right: 0;
+    bottom: 5px;
+}

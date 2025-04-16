@@ -1,0 +1,23 @@
+/* client/src/components/HorizontalMatchList/HorizontalMatchList.module.css */
+.sportSection {
+    margin-bottom: 2rem;
+    margin-right: -20px;
+}
+
+.sportTitle {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.horizontalScroll {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    overflow-x: auto;
+    padding: 0.5rem;
+}
+
+/* Hide scrollbar in WebKit browsers (Chrome, Safari, etc.) if desired */
+.horizontalScroll::-webkit-scrollbar {
+    display: none;
+}

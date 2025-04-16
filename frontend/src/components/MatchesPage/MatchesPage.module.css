@@ -1,0 +1,101 @@
+.mainPageContainer {
+    padding: 1rem;
+    min-height: 100vh;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.BreadCrumbs {
+    text-decoration: none;
+    color: inherit;
+}
+
+.title {
+    margin: 0;
+    margin: 15px 0 30px;
+}
+
+.navLinks {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    align-items: center;
+}
+
+.navButton {
+    padding: 0.5rem 1rem;
+    background-color: #7a746c67;
+    color: white;
+    border: none;
+    text-decoration: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.selected {
+    font-weight: 600;
+    background-color: rgba(248, 98, 161, 0.2);
+    border: 1px solid #ff142b;
+    color: #fff;
+    box-shadow: 0 0 12px 6px rgba(226, 17, 55, 0.6);
+}
+
+.gamesList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.gameCard {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    padding: 1rem;
+    width: 220px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+}
+
+.loading {
+    text-align: center;
+    margin-top: 2rem;
+    font-size: 1.2rem;
+    color: #555;
+}
+
+
+/* 2) Horizontal sports carousel */
+.sportsCarousel {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+    margin-right: -20px;
+}
+
+.sportsCarousel::-webkit-scrollbar {
+    display: none;
+    /* hide scrollbar if you like */
+}
+
+.sportCard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: end;
+    width: 100px;
+    height: 100px;
+    /* or whatever size you want */
+    background-color: #2e2e48;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #fff;
+    padding: 0.5rem 0.5rem 0.2rem;
+    flex-shrink: 0;
+    /* so they don't shrink in flex container */
+    font-weight: 800;
+}
