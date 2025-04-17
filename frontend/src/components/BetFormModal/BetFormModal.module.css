@@ -1,122 +1,461 @@
-/* client/src/components/BetCard/BetCard.module.css */
-.betCardContainer {
-    outline: 1px solid transparent;
-    border-radius: 8px;
-    padding: 1rem 1rem 2rem;
-    margin: 1rem 0;
-    background-color: #ffffff1c;
-    display: flex;
-    gap: 20px;
-    flex-direction: column;
-    color: rgb(255, 255, 255);
-    box-sizing: border-box;
-    transition: .3s;
-    position: relative;
-    z-index: 0;
-}
-
-.betCardContainer:hover {
-    outline: 1px solid #ff142b;
-    box-shadow: 0 0 12px 6px rgba(226, 17, 55, 0.6);
-}
-
-.betCardTop {
+/* The semi-transparent background behind the sheet */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 900;
+    /* below the sheet */
+}
+
+/* The main bottom sheet container */
+.bottomSheet {
     display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+    position: fixed;
+    top: 100px;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-width: 500px;
+    background: #251328;
+    border-radius: 16px 16px 0 0;
+    z-index: 9990;
+    animation: slideUp 0.3s ease forwards;
+    box-shadow: 0 0 10px 12px rgba(226, 17, 55, 0.4);
+    overflow: hidden;
+}
+
+.navContainer {
+    display: flex;
+    width: 100%;
+    box-sizing: border-box;
+    justify-content: space-between;
+    align-items: center;
+    color: rgb(255, 255, 255);
+    font-size: 24px;
+    margin-bottom: 1rem;
+    padding-top: 10px;
+}
+
+.navContainer p {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+.navContainer svg {
+    color: white;
+}
+
+.menuContainer {
+    width: 100%;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+.leagueLogoContainer {
+    margin-top: 30px;
+}
+
+.leagueLogoContainer svg {
+    width: 100px;
+    height: 100px;
+}
+
+.gameContainer {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+
+}
+
+.teamLogoContainer svg {
+    width: 65px;
+    height: 65px;
+}
+
+.matchTime p {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 0;
+}
+
+.dateMonth {
+    margin: 0;
+    font-size: 24px;
+    text-transform: capitalize;
+    color: white;
+}
+
+.dateTime {
+    color: #eab01c;
+    font-size: 32px;
+    margin: 0;
+}
+
+/* Slide-up keyframe (adjust as needed) */
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+/* Header row with close button */
+.sheetHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    color: #fff;
+    width: 100%;
+}
+
+.nameTeam {
+    font-size: 18px;
+    text-align: center;
+    width: 40%;
+}
+
+.closeBtn {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    color: #fff;
+    cursor: pointer;
+}
+
+.outcomeContainer {
+    margin-top: 1.5rem;
+    width: 90%;
+    text-align: center;
+    background: rgba(56, 57, 58, 0.426);
+    transform: translateY(-50px);
+    border-radius: 9px;
+}
+
+.outcomeTitle {
+    color: #fff;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+.selectionRow {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 1rem;
+    gap: 10px;
+    padding: 10px;
+}
+
+.selectionBox {
+    border: 1px dashed rgb(255, 255, 255);
+    background: #5858599b;
+    padding: 10px 15px;
+    color: #fff;
+    width: auto;
+    height: auto;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    gap: 5px;
+    transition: .2s;
+}
+
+.selectionText {
+    font-weight: 500;
+}
+
+.selectionBox p {
+    margin: 0;
+}
+
+.selectionBox:hover {
+    border: 1px solid #f70;
+    background: #44315a;
+}
+
+.plusIcon {
+    background-color: #13182A;
+    padding: 4px;
+    border-radius: 50%;
+    transform: rotate(45deg);
+}
+
+.teamOdds {
+    width: fit-content;
+    padding: 2px;
+    background-color: rgb(41, 132, 59);
+    border-radius: 5px;
+    border: 2px solid rgb(54, 183, 54);
+    color: rgb(255, 255, 255);
+}
+
+.cardSelectionArea {
+    margin-bottom: 1rem;
+    color: #fff;
+}
+
+.cardSelectionBtn {
+    background: #ff3344;
+    color: #fff;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.error {
+    color: red;
+    margin-bottom: 0.5rem;
+}
+
+.buttonRow {
+    display: flex;
+    justify-content: center;
+}
+
+.confirmBtn {
+    background: #06c167;
+    color: #fff;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.inventorySheet {
+    color: white;
+    box-sizing: border-box;
+    position: fixed;
+    top: 300px;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #251328;
+    border-radius: 16px 16px 0 0;
+    padding: 1rem;
+    z-index: 10010;
+    animation: slideUp 0.3s ease forwards;
+
+    display: flex;
+    flex-direction: column;
+    /* overflow-y: auto; */
+}
+
+.inventoryTop {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+
+    flex: 0 0 auto;
+}
+
+hr {
+    border: #414342 1px solid;
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+.inventoryContent {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 0 1rem 1rem;
+}
+
+.cardList {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.5rem;
+    margin: 1rem 0;
+}
+
+.cardItem {
+    background: #2e2e48;
+    border-radius: 8px;
+    color: #fff;
+    padding: 0.5rem;
+    cursor: pointer;
+}
+
+.cardImg {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+.invButtonRow {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex: 0 0 auto;
+    display: flex;
+}
+
+.invButtonRow button {
+    font-family: "Montserrat", sans-serif;
+    padding: 10px;
+    color: white;
+    width: 45%;
+    font-weight: bold;
+    border-radius: 9px;
+}
+
+.clearSelectionBtn {
+    background: none;
+    border: rgb(200, 200, 200) 1px solid;
+}
+
+.cnfrmBtn {
+    background-color: #ff3344;
+    box-shadow: rgba(238, 19, 19, 1) 0px 0px 20px;
+    transition: opacity 0.2s ease;
+    outline: none;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    background:
+        /* top layer (solid interior) */
+        linear-gradient(#ff3344, #ff3344) padding-box,
+        /* bottom layer (gradient border) */
+        linear-gradient(to bottom right, #ff7f7f, #7e2a36) border-box;
+    background-clip: padding-box, border-box;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.75rem 1.5rem;
+    box-sizing: border-box;
+    /* (Optional) Glow or shadow: */
+    box-shadow: 0 0 20px rgba(255, 51, 68, 0.5);
+}
+
+.cnfrmBtn:disabled {
+    opacity: 0.5;
+}
+
+.confirmationSheet {
+    box-sizing: border-box;
+    position: fixed;
+    top: 300px;
+    /* or whatever matches your main sheet */
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #251328;
+    border-radius: 16px 16px 0 0;
+    padding: 1rem;
+    z-index: 10020;
+    /* just above inventorySheet */
+    animation: slideUp 0.3s ease forwards;
+    overflow-y: auto;
+}
+
+.confirmationRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    background: rgba(56, 57, 58, 0.426);
+    margin-bottom: 4px;
+    padding: 0 10px;
+}
+
+.confirmationContainer {
+    background-color: #2f2330;
+    border-radius: 9px;
+    overflow: hidden;
+    padding-bottom: 10px;
+
+}
+
+.confirmationTeam {
+    font-size: 1.2rem;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.oddsBox {
+    width: fit-content;
+    padding: 2px;
+    background-color: rgb(41, 132, 59);
+    border-radius: 5px;
+    border: 2px solid rgb(54, 183, 54);
+    color: rgb(255, 255, 255);
+}
+
+.winText {
+    color: #fff;
+    font-size: 1rem;
+    margin: 1rem 0;
+    text-align: center;
+}
+
+.cardPreview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 30%;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.confirmationButtonRow {
+    display: flex;
+    justify-content: space-between;
+}
+
+.confirmationButtonRow button {
+    flex: 1;
+    margin: 0 0.5rem;
+}
+
+.chosenBetContainer {
+    padding: 1rem 1rem;
+    color: white;
+    display: flex;
+    flex-direction: row;
     justify-content: space-between;
     align-items: center;
 }
 
-.matchInfo {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+.cardUsed {
+    width: 25%;
 }
 
-.teamContainer {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
-@keyframes pulsateShadow {
-    0% {
-        text-shadow: 0 0 5px rgba(255, 0, 0, 0.6);
+@keyframes slideDown {
+    from {
+        transform: translateY(0);
     }
 
-    50% {
-        text-shadow: 0 0 15px rgba(255, 0, 0, 1);
-    }
-
-    100% {
-        text-shadow: 0 0 5px rgba(255, 0, 0, 0.6);
+    to {
+        transform: translateY(100%);
     }
 }
 
-.fadingText {
-    animation: pulsateShadow 2s infinite ease-in-out;
-}
-
-.teamContainer p {
-    font-weight: 600;
-}
-
-.teamLogoContainer {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 30px;
-    padding: 10px;
-    background: #212334;
-    border-radius: 50%;
-    border: 2px solid #3f4256
-}
-
-.vsp {
-    margin-left: 65px;
-    font-size: 24px;
-}
-
-.cardInfo {
-    position: absolute;
-    bottom: 2.2rem;
-    right: 1rem;
-}
-
-.cardDetails {
-    display: flex;
-    align-items: center;
-}
-
-.cardImage {
-    width: 50px;
-    height: auto;
-    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
-}
-
-.statusWon {
-    background: rgb(42, 99, 243);
-    width: calc(100% + 2rem);
-    margin: 0 0 -2rem -1rem;
-    border-radius: 0px 0px 8px 8px;
-    padding: 5px;
-    box-sizing: border-box;
-    text-align: center;
-    font-weight: 500;
-}
-
-.statusLost {
-    background: #ff142b;
-    width: calc(100% + 2rem);
-    margin: 0 0 -2rem -1rem;
-    border-radius: 0px 0px 8px 8px;
-    padding: 5px;
-    box-sizing: border-box;
-    text-align: center;
-    font-weight: 500;
-}
-
-p {
-    margin: 0;
+.slideDown {
+    animation: slideDown 0.3s ease forwards;
 }
