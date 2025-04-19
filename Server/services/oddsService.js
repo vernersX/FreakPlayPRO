@@ -149,37 +149,43 @@ async function resolveMatches() {
           const winner = determineWinnerFromScores(matchObj.scores, dbMatch.homeTeam, dbMatch.awayTeam);
           if (!winner) continue;
 
-          // Update each pending bet.
+          // Update each pending bet:
           for (const bet of pendingBets) {
+            // fetch the single card used in this bet
             const card = await models.Card.findByPk(bet.cardId);
+
             if (bet.selection === winner) {
+              // Bet won
               const payout = bet.stake * bet.odds;
               bet.status = 'won';
               bet.payout = payout;
               await bet.save();
 
               if (card) {
-                // set a 1‑hour cooldown from now
-                card.cooldownUntil = new Date(Date.now() + 1 * 60 * 60 * 1000);
-                card.winStreak = 0;
+                // on win: increment streak, unlock, NO cooldown
+                card.winStreak = (card.winStreak || 0) + 1;
                 card.isLocked = false;
                 await card.save();
               }
 
+              // credit the user
               const user = await models.User.findByPk(bet.userId);
               if (user) {
                 user.coins += payout;
                 await user.save();
               }
+
             } else {
+              // Bet lost
               bet.status = 'lost';
               bet.payout = 0;
               await bet.save();
 
               if (card) {
-                card.lives -= 1;
+                // on loss: reset streak, unlock, and set 1‑hour cooldown
                 card.winStreak = 0;
                 card.isLocked = false;
+                card.cooldownUntil = new Date(Date.now() + 1 * 60 * 60 * 1000);
                 await card.save();
               }
             }

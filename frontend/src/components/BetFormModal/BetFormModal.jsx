@@ -1,9 +1,9 @@
+// src/components/BetFormModal/BetFormModal.jsx
 import React, { useEffect, useState } from 'react';
-import { useLocation, useNavigate, Link } from 'react-router-dom'; // <--- Notice we import these
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import styles from './BetFormModal.module.css';
 import { API_BASE_URL } from '../../config';
 import CardWithCooldown from '../CardWithCooldown/CardWithCooldown';
-
 
 function getOdds(selection, game) {
     if (selection === 'home') return game.homeOdds;
@@ -12,256 +12,183 @@ function getOdds(selection, game) {
     return 0;
 }
 
-function BetFormModal({ game, telegramId, onClose, onBetSuccess, backgroundImg }) {
+export default function BetFormModal({ game, telegramId, onClose, onBetSuccess, backgroundImg }) {
     const [cards, setCards] = useState([]);
-    const [selectedCardId, setSelectedCardId] = useState('');
-    const [selection, setSelection] = useState(null);
+    const [selected, setSelected] = useState([]);             // array of selected card IDs
+    const [selection, setSelection] = useState(null);         // 'home' | 'draw' | 'away'
     const [placedBet, setPlacedBet] = useState(null);
 
-    // Controls whether user sees the "pick a card" inventory
     const [showInventory, setShowInventory] = useState(false);
-
-    // Controls the final confirmation screen
     const [showConfirmation, setShowConfirmation] = useState(false);
-
     const [loadingCards, setLoadingCards] = useState(true);
     const [error, setError] = useState('');
-
-    // -- For sliding down animation
     const [closing, setClosing] = useState(false);
 
     const location = useLocation();
     const navigate = useNavigate();
 
+    // prevent body scroll while modal open
     useEffect(() => {
         document.body.style.overflow = 'hidden';
-        return () => {
-            document.body.style.overflow = '';
-        };
+        return () => { document.body.style.overflow = ''; };
     }, []);
 
-    // ---------------------------------------
-    // LOADING CARDS + CHECKING FOR EXISTING BET
-    // ---------------------------------------
+    // load cards
     useEffect(() => {
         fetch(`${API_BASE_URL}/api/inventory/cards?telegramId=${telegramId}`)
-            .then((res) => res.json())
-            .then((data) => {
-                const availableCards = data.filter((card) => !card.isLocked);
-                setCards(availableCards);
+            .then(res => res.json())
+            .then(data => {
+                setCards(data.filter(c => !c.isLocked));
                 setLoadingCards(false);
             })
-            .catch((err) => {
-                console.error(err);
-                setLoadingCards(false);
-            });
+            .catch(() => setLoadingCards(false));
     }, [telegramId]);
 
+    // check existing bet for this match
     useEffect(() => {
-        async function checkExistingBet() {
-            const url = `${API_BASE_URL}/api/bets/forMatch?telegramId=${telegramId}&matchId=${game.id}`;
+        async function checkExisting() {
             try {
-                const res = await fetch(url);
+                const res = await fetch(
+                    `${API_BASE_URL}/api/bets/forMatch?telegramId=${telegramId}&matchId=${game.id}`
+                );
                 const bet = await res.json();
-                if (bet) {
-                    setPlacedBet(bet);
-                }
-            } catch (err) {
-                console.error('Error fetching bet for match:', err);
-            }
-        }
-
-        async function loadCards() {
-            try {
-                const res = await fetch(`${API_BASE_URL}/api/inventory/cards?telegramId=${telegramId}`);
-                const data = await res.json();
-                const availableCards = data.filter((card) => !card.isLocked);
-                setCards(availableCards);
-                setLoadingCards(false);
+                if (bet) setPlacedBet(bet);
             } catch (err) {
                 console.error(err);
-                setLoadingCards(false);
             }
         }
-
-        checkExistingBet();
-        loadCards();
+        checkExisting();
     }, [telegramId, game.id]);
 
-    // ---------------------------------------
-    // BET SUBMISSION
-    // ---------------------------------------
-    async function handleSubmit() {
-        if (!selection || !selectedCardId) {
-            setError('Please select an outcome and a card.');
-            return;
-        }
-        setError('');
-
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/bets`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    telegramId,
-                    matchId: game.id,
-                    selection,
-                    cardId: selectedCardId,
-                }),
-            });
-
-            const data = await response.json();
-            if (!response.ok) {
-                setError(data.error || 'Error placing bet');
-            } else {
-                onBetSuccess(data.bet);
-            }
-        } catch (err) {
-            console.error(err);
-            setError('Error placing bet');
-        }
-    }
-
-    // ---------------------------------------
-    // UI EVENT HANDLERS
-    // ---------------------------------------
+    // handle outcome selection
     function handleSelectOutcome(outcome) {
         setSelection(outcome);
         setShowInventory(true);
         setShowConfirmation(false);
     }
 
+    // toggle card in selection array (max 3)
     function handleCardSelection(id) {
-        setSelectedCardId(id);
+        setSelected(arr => {
+            if (arr.includes(id)) return arr.filter(x => x !== id);
+            if (arr.length < 3) return [...arr, id];
+            return arr;
+        });
     }
 
+    // confirm inventory (must have ≥1 selected)
     function handleInventoryConfirm() {
-        if (!selectedCardId) return;
+        if (selected.length === 0) return;
         setShowInventory(false);
         setShowConfirmation(true);
     }
 
+    // clear everything
     function handleClearSelection() {
-        setSelectedCardId('');
+        setSelected([]);
         setSelection(null);
         setShowConfirmation(false);
+        setError('');
     }
 
-    // ---------------------------------------
-    // SLIDE-DOWN LOGIC
-    // ---------------------------------------
+    // slide down animation
     function handleStartClosing() {
-        // This triggers the slide-down animation
         setClosing(true);
     }
 
-    // After animation ends, actually close
     function handleAnimationEnd(e) {
-        if (e.animationName === styles.slideDown) {
-            onClose();
-        }
+        if (e.animationName === styles.slideDown) onClose();
     }
 
-    // Overlay click or "X" click => slide down
     function handleOverlayClick() {
         handleStartClosing();
     }
 
-    // Special logic for arrow
     function handleArrowClick() {
-        if (location.pathname === '/matches') {
-            // We are already on /matches, so just slide down
-            handleStartClosing();
-        } else {
-            // Not on /matches route, so navigate there
-            navigate('/matches');
-        }
+        if (location.pathname === '/matches') handleStartClosing();
+        else navigate('/matches');
     }
 
-    // ---------------------------------------
-    // FORMAT DATE
-    // ---------------------------------------
     function formatDate(dateString) {
         const date = new Date(dateString);
         const day = date.getDate();
-        const monthShort = date.toLocaleString('en-GB', { month: 'short' }).toLowerCase();
-        const hours = String(date.getHours()).padStart(2, '0');
-        const minutes = String(date.getMinutes()).padStart(2, '0');
-
+        const month = date.toLocaleString('en-GB', { month: 'short' }).toLowerCase();
+        const hh = String(date.getHours()).padStart(2, '0');
+        const mm = String(date.getMinutes()).padStart(2, '0');
         return (
             <>
-                <span className={styles.dateMonth}>{day}. {monthShort}</span>
-                <span className={styles.dateTime}>{hours}:{minutes}</span>
+                <span className={styles.dateMonth}>{day}. {month}</span>
+                <span className={styles.dateTime}>{hh}:{mm}</span>
             </>
         );
     }
 
-    // ---------------------------------------
-    // POTENTIAL WIN
-    // ---------------------------------------
-    const selectedCard = cards.find((c) => c.id === selectedCardId);
+    // compute totals
+    const totalValue = selected.reduce((sum, id) => {
+        const c = cards.find(x => x.id === id);
+        return c ? sum + c.baseValue : sum;
+    }, 0);
     const odds = getOdds(selection, game);
-    const potentialWin = selectedCard && odds
-        ? (selectedCard.baseValue * odds).toFixed(2)
-        : 0;
+    const potentialWin = odds
+        ? (totalValue * odds).toFixed(2)
+        : '0.00';
 
-    // ---------------------------------------
-    // RENDER
-    // ---------------------------------------
+    // submit multi-card bet
+    async function handleSubmit() {
+        if (!selection || selected.length === 0) {
+            setError('Please select an outcome and at least one card.');
+            return;
+        }
+        setError('');
+        try {
+            console.log("placing bet with:", {
+                telegramId,
+                matchId: game.id,
+                predictedOutcome: selection,
+                cardIds: selected
+            });
+            const res = await fetch(`${API_BASE_URL}/api/bets`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    telegramId,
+                    matchId: game.id,
+                    predictedOutcome: selection,
+                    cardIds: selected,
+                }),
+            });
+            const data = await res.json();
+            if (!res.ok) setError(data.error || 'Error placing bet');
+            else onBetSuccess(data.bet);
+        } catch (err) {
+            console.error(err);
+            setError('Error placing bet');
+        }
+    }
+
     return (
         <div>
-            {/* Overlay behind the main bottom sheet */}
             <div className={styles.overlay} onClick={handleOverlayClick} />
 
-            {/* Main bottom sheet */}
             <div
                 className={`${styles.bottomSheet} ${closing ? styles.slideDown : ''}`}
                 onAnimationEnd={handleAnimationEnd}
             >
-                {/* Nav-like header */}
-                {/* <div className={styles.navContainer}>
-                    <p onClick={handleArrowClick} style={{ cursor: 'pointer' }}>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="20" viewBox="0 0 12 20" fill="none">
-                            <path d="M0.303223 10.0068C0.308757 9.81315 0.347493 9.63607 0.419434 9.47559C0.491374 9.3151 0.602051 9.16016 0.751465 9.01074L9.06885 0.958984C9.3068 0.721029 9.6001 0.602051 9.94873 0.602051C10.1812 0.602051 10.3914 0.657389 10.5796 0.768066C10.7733 0.878743 10.9255 1.02816 11.0361 1.21631C11.1523 1.40446 11.2104 1.61475 11.2104 1.84717C11.2104 2.19027 11.0804 2.49186 10.8203 2.75195L3.2998 9.99854L10.8203 17.2534C11.0804 17.519 11.2104 17.8206 11.2104 18.1582C11.2104 18.3962 11.1523 18.6092 11.0361 18.7974C10.9255 18.9855 10.7733 19.1349 10.5796 19.2456C10.3914 19.3618 10.1812 19.4199 9.94873 19.4199C9.6001 19.4199 9.3068 19.2982 9.06885 19.0547L0.751465 11.0029C0.596517 10.8535 0.483073 10.6986 0.411133 10.5381C0.339193 10.3721 0.303223 10.195 0.303223 10.0068Z" fill="white" />
-                        </svg>
-                        Matches
-                    </p>
-                    <div onClick={handleOverlayClick} style={{ cursor: 'pointer' }}>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                            <path d="M1.00098 1L15 14.9991" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                            <path d="M1.00009 14.9991L14.9991 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                    </div>
-                </div> */}
-
-                {/* The top portion with background + match info */}
+                {/* header with background */}
                 <div
                     className={styles.menuContainer}
                     style={{
-                        background: `linear-gradient(
-                            to bottom,
-                            #251328 0%,
-                            #251328 1%,
-                            rgba(37, 19, 40, 0.3) 50%,
-                            #251328 90%,
-                            #251328 100%
-                          ), url('${backgroundImg}')`,
+                        background: `linear-gradient(to bottom, #251328 0%, #251328 1%, rgba(37,19,40,0.3) 50%, #251328 90%, #251328 100%), url('${backgroundImg}')`,
                         backgroundPosition: 'center',
-                        backgroundSize: 'cover',
-                        overflow: 'hidden'
+                        backgroundSize: 'cover'
                     }}
                 >
                     <div className={styles.navContainer}>
-                        <p onClick={handleArrowClick} style={{ cursor: 'pointer' }}>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="20" viewBox="0 0 12 20" fill="none">
-                                <path d="M0.303223 10.0068C0.308757 9.81315 0.347493 9.63607 0.419434 9.47559C0.491374 9.3151 0.602051 9.16016 0.751465 9.01074L9.06885 0.958984C9.3068 0.721029 9.6001 0.602051 9.94873 0.602051C10.1812 0.602051 10.3914 0.657389 10.5796 0.768066C10.7733 0.878743 10.9255 1.02816 11.0361 1.21631C11.1523 1.40446 11.2104 1.61475 11.2104 1.84717C11.2104 2.19027 11.0804 2.49186 10.8203 2.75195L3.2998 9.99854L10.8203 17.2534C11.0804 17.519 11.2104 17.8206 11.2104 18.1582C11.2104 18.3962 11.1523 18.6092 11.0361 18.7974C10.9255 18.9855 10.7733 19.1349 10.5796 19.2456C10.3914 19.3618 10.1812 19.4199 9.94873 19.4199C9.6001 19.4199 9.3068 19.2982 9.06885 19.0547L0.751465 11.0029C0.596517 10.8535 0.483073 10.6986 0.411133 10.5381C0.339193 10.3721 0.303223 10.195 0.303223 10.0068Z" fill="white" />
-                            </svg>
-                            Matches
-                        </p>
+                        <p onClick={handleArrowClick} style={{ cursor: 'pointer' }}>Matches</p>
                         <div onClick={handleOverlayClick} style={{ cursor: 'pointer' }}>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                <path d="M1.00098 1L15 14.9991" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                <path d="M1.00009 14.9991L14.9991 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                            <svg width="16" height="16" viewBox="0 0 16 16">
+                                <path d="M1 1L15 15" stroke="white" strokeWidth="1.5" />
+                                <path d="M1 15L15 1" stroke="white" strokeWidth="1.5" />
                             </svg>
                         </div>
                     </div>
@@ -294,7 +221,6 @@ function BetFormModal({ game, telegramId, onClose, onBetSuccess, backgroundImg }
                 </div>
 
                 {placedBet ? (
-                    // If there's already a bet placed
                     <div className={styles.chosenBetContainer}>
                         <div className={styles.chosenTeamContainer}>
                             <p>Winner</p>
@@ -303,178 +229,175 @@ function BetFormModal({ game, telegramId, onClose, onBetSuccess, backgroundImg }
                                     ? game.homeTeam
                                     : placedBet.selection === 'draw'
                                         ? 'Draw'
-                                        : game.awayTeam}{' '}
-                                x{placedBet.odds}
+                                        : game.awayTeam
+                                } x{placedBet.odds}
                             </p>
                             <p>Status: {placedBet.status}</p>
                         </div>
-                        {placedBet.Card && (
-                            <div className={styles.cardUsed}>
-                                <img
-                                    src={placedBet.Card.imageURL}
-                                    alt="Card used"
-                                    className={styles.cardImg}
-                                />
-                            </div>
-                        )}
-                    </div>
-                ) : (
-                    // No bet placed => show outcome selection
-                    <div className={styles.outcomeContainer}>
-                        <p className={styles.outcomeTitle}>Winner</p>
-                        <div className={styles.selectionRow}>
-                            <div
-                                className={`${styles.selectionBox} ${selection === 'home' ? styles.selected : ''
-                                    }`}
-                                onClick={() => handleSelectOutcome('home')}
-                            >
-                                <p>Team 1</p>
-                                <span className={styles.teamOdds}>x{game.homeOdds}</span>
-                                <svg className={styles.plusIcon} xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                    <path d="M1.00098 1L15 14.9991" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                    <path d="M1.00009 14.9991L14.9991 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
-                                <p className={styles.selectionText}>Select a Ball</p>
-                            </div>
-                            {game.drawOdds && (
-                                <div
-                                    className={`${styles.selectionBox} ${selection === 'draw' ? styles.selected : ''}`}
-                                    onClick={() => handleSelectOutcome('draw')}
-                                >
-                                    <p>Draw</p>
-                                    <span className={styles.teamOdds}>x{game.drawOdds}</span>
-                                    <svg className={styles.plusIcon} xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                        <path d="M1.00098 1L15 14.9991" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                        <path d="M1.00009 14.9991L14.9991 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
-                                    <p className={styles.selectionText}>Select a Ball</p>
-                                </div>
-                            )}
 
-                            <div
-                                className={`${styles.selectionBox} ${selection === 'away' ? styles.selected : ''
-                                    }`}
-                                onClick={() => handleSelectOutcome('away')}
-                            >
-                                <p>Team 2</p>
-                                <span className={styles.teamOdds}>x{game.awayOdds}</span>
-                                <svg className={styles.plusIcon} xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                    <path d="M1.00098 1L15 14.9991" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                    <path d="M1.00009 14.9991L14.9991 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
-                                <p className={styles.selectionText}>Select a Ball</p>
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            {/* Inventory Overlay */}
-            {showInventory && (
-                <div className={styles.overlay} onClick={() => setShowInventory(false)} />
-            )}
-            {/* Inventory Sheet */}
-            {showInventory && (
-                <div className={styles.inventorySheet}>
-                    <div className={styles.inventoryTop}>
-                        <h2 className={styles.inventoryTitle}>Select a Card</h2>
-                        <div onClick={handleOverlayClick} style={{ cursor: 'pointer' }}>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                <path d="M1.00098 1L15 14.9991" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                <path d="M1.00009 14.9991L14.9991 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                        </div>
-                    </div>
-                    <hr />
-                    <div className={styles.inventoryContent}>
-                        {loadingCards ? (
-                            <p>Loading cards...</p>
-                        ) : cards.length === 0 ? (
-                            <p>No available cards in your inventory.</p>
-                        ) : (
-                            <div className={styles.cardList}>
-                                {cards.map((card) => (
-                                    <div
+                        {placedBet.Cards && placedBet.Cards.length > 0 && (
+                            <div className={styles.cardPreview}>
+                                {placedBet.Cards.map(card => (
+                                    <CardWithCooldown
                                         key={card.id}
-                                        className={`${styles.cardItem} ${card.id === selectedCardId ? styles.cardSelected : ''
-                                            }`}
-                                        onClick={() => handleCardSelection(card.id)}
-                                    >
-                                        <CardWithCooldown
-                                            imageUrl={card.imageURL}
-                                            altText={card.rarity}
-                                            cooldownUntil={card.cooldownUntil}
-                                            className={styles.cardImg}
-                                        />
-                                    </div>
+                                        imageUrl={card.imageURL}
+                                        altText={card.rarity}
+                                        cooldownUntil={card.cooldownUntil}
+                                        className={styles.cardImg}
+                                    />
                                 ))}
                             </div>
                         )}
                     </div>
-                    <div className={styles.invButtonRow}>
-                        <button className={styles.clearSelectionBtn} onClick={handleClearSelection}>Clear selection</button>
-                        <button className={styles.cnfrmBtn} onClick={handleInventoryConfirm} disabled={!selectedCardId}>
-                            Confirm{selectedCardId ? ` (1)` : ''}
-                        </button>
+                ) : (
+                    <>
+                        {/* outcome selection */}
+                        <div className={styles.outcomeContainer}>
+                            <p className={styles.outcomeTitle}>Winner</p>
+                            <div className={styles.selectionRow}>
+                                {['home', 'draw', 'away'].map(opt => (
+                                    game[opt + 'Odds'] != null && (
+                                        <div
+                                            key={opt}
+                                            className={`${styles.selectionBox} ${selection === opt ? styles.selected : ''}`}
+                                            onClick={() => handleSelectOutcome(opt)}
+                                        >
+                                            <p>{opt === 'home' ? 'Team 1' : opt === 'draw' ? 'Draw' : 'Team 2'}</p>
+                                            <span className={styles.teamOdds}>x{game[opt + 'Odds']}</span>
+                                            <svg className={styles.plusIcon} width="16" height="16" viewBox="0 0 16 16">
+                                                <path d="M1 1L15 15" stroke="white" strokeWidth="1.5" />
+                                                <path d="M1 15L15 1" stroke="white" strokeWidth="1.5" />
+                                            </svg>
+                                            <p className={styles.selectionText}>Select cards</p>
+                                        </div>
+                                    )
+                                ))}
+                            </div>
+                        </div>
+                    </>
+                )}
+            </div>
+
+            {/* Inventory sheet */}
+            {showInventory && (
+                <>
+                    <div className={styles.overlay} onClick={() => setShowInventory(false)} />
+                    <div className={styles.inventorySheet}>
+                        <div className={styles.inventoryTop}>
+                            <h2 className={styles.inventoryTitle}>Select up to 3 cards</h2>
+                            <div onClick={handleOverlayClick} style={{ cursor: 'pointer' }}>
+                                <svg width="16" height="16" viewBox="0 0 16 16">
+                                    <path d="M1 1L15 15" stroke="white" strokeWidth="1.5" />
+                                    <path d="M1 15L15 1" stroke="white" strokeWidth="1.5" />
+                                </svg>
+                            </div>
+                        </div>
+                        <hr />
+                        <div className={styles.inventoryContent}>
+                            {loadingCards
+                                ? <p>Loading cards...</p>
+                                : cards.length === 0
+                                    ? <p>No available cards.</p>
+                                    : (
+                                        <div className={styles.cardList}>
+                                            {cards.map(card => {
+                                                const isSel = selected.includes(card.id);
+                                                return (
+                                                    <div
+                                                        key={card.id}
+                                                        className={`${styles.cardItem} ${isSel ? styles.cardSelected : ''}`}
+                                                        onClick={() => handleCardSelection(card.id)}
+                                                    >
+                                                        <CardWithCooldown
+                                                            imageUrl={card.imageURL}
+                                                            altText={card.rarity}
+                                                            cooldownUntil={card.cooldownUntil}
+                                                            className={styles.cardImg}
+                                                        />
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )
+                            }
+                        </div>
+                        <div className={styles.invButtonRow}>
+                            <button className={styles.clearSelectionBtn} onClick={handleClearSelection}>
+                                Clear selection
+                            </button>
+                            <button
+                                className={styles.cnfrmBtn}
+                                onClick={handleInventoryConfirm}
+                                disabled={selected.length === 0}
+                            >
+                                Confirm ({selected.length}/3)
+                            </button>
+                        </div>
                     </div>
-                </div>
+                </>
             )}
 
-            {/* Confirmation Overlay */}
+            {/* Confirmation sheet */}
             {showConfirmation && (
-                <div className={styles.overlay} onClick={() => setShowConfirmation(false)} />
-            )}
-            {/* Confirmation Sheet */}
-            {showConfirmation && (
-                <div className={styles.confirmationSheet}>
-                    <div className={styles.navContainer}>
-                        <p>
-                            Winner
-                        </p>
-                        <div onClick={handleOverlayClick} style={{ cursor: 'pointer' }}>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                <path d="M1.00098 1L15 14.9991" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                <path d="M1.00009 14.9991L14.9991 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                        </div>
-                    </div>
-                    <div className={styles.confirmationContainer}>
-                        <div className={styles.confirmationRow}>
-                            <p className={styles.confirmationTeam}>
-                                {selection === 'home'
-                                    ? game.homeTeam
-                                    : selection === 'draw'
-                                        ? 'Draw'
-                                        : game.awayTeam}
-                            </p>
-                            <p className={styles.oddsBox}>x{odds}</p>
-                        </div>
-                        <div className={styles.confirmationRow}>
-                            <p className={styles.winText}>
-                                You will win</p>
-                            <p className={styles.winText}>
-                                {potentialWin}
-                            </p>
-                        </div>
-                        {selectedCard && (
-                            <div className={styles.cardPreview}>
-                                <img
-                                    src={selectedCard.imageURL}
-                                    alt={`${selectedCard.rarity} card`}
-                                    className={styles.cardImg}
-                                />
+                <>
+                    <div className={styles.overlay} onClick={() => setShowConfirmation(false)} />
+                    <div className={styles.confirmationSheet}>
+                        <div className={styles.navContainer}>
+                            <p>Winner</p>
+                            <div onClick={handleOverlayClick} style={{ cursor: 'pointer' }}>
+                                <svg width="16" height="16" viewBox="0 0 16 16">
+                                    <path d="M1 1L15 15" stroke="white" strokeWidth="1.5" />
+                                    <path d="M1 15L15 1" stroke="white" strokeWidth="1.5" />
+                                </svg>
                             </div>
-                        )}
-                        {error && <p className={styles.error}>{error}</p>}
-                        <div className={styles.invButtonRow}>
-                            <button className={styles.clearSelectionBtn} onClick={handleClearSelection}>Clear cards</button>
-                            <button className={styles.cnfrmBtn} onClick={handleSubmit}>Win up to {potentialWin}</button>
+                        </div>
+                        <div className={styles.confirmationContainer}>
+                            <div className={styles.confirmationRow}>
+                                <p className={styles.confirmationTeam}>
+                                    {selection === 'home'
+                                        ? game.homeTeam
+                                        : selection === 'draw'
+                                            ? 'Draw'
+                                            : game.awayTeam
+                                    }
+                                </p>
+                                <p className={styles.oddsBox}>x{odds}</p>
+                            </div>
+                            <div className={styles.confirmationRow}>
+                                <p className={styles.winText}>Your stake</p>
+                                <p className={styles.winText}>{totalValue.toFixed(2)}</p>
+                            </div>
+                            <div className={styles.confirmationRow}>
+                                <p className={styles.winText}>Potential win</p>
+                                <p className={styles.winText}>{potentialWin}</p>
+                            </div>
+                            <div className={styles.cardPreview}>
+                                {cards
+                                    .filter(c => selected.includes(c.id))
+                                    .map(c => (
+                                        <CardWithCooldown
+                                            key={c.id}
+                                            imageUrl={c.imageURL}
+                                            altText={c.rarity}
+                                            cooldownUntil={c.cooldownUntil}
+                                            className={styles.cardImg}
+                                        />
+                                    ))
+                                }
+                            </div>
+                            {error && <p className={styles.error}>{error}</p>}
+                            <div className={styles.invButtonRow}>
+                                <button className={styles.clearSelectionBtn} onClick={handleClearSelection}>
+                                    Clear cards
+                                </button>
+                                <button className={styles.cnfrmBtn} onClick={handleSubmit}>
+                                    Place Bet
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </>
             )}
         </div>
     );
 }
-
-export default BetFormModal;

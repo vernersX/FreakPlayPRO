@@ -416,11 +416,13 @@ hr {
 
 .cardPreview {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    width: 30%;
+    width: 100%;
     gap: 0.5rem;
     margin-bottom: 1rem;
+    padding: 5px;
+    box-sizing: border-box;
 }
 
 .confirmationButtonRow {
@@ -437,9 +439,14 @@ hr {
     padding: 1rem 1rem;
     color: white;
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     justify-content: space-between;
     align-items: center;
+}
+
+.chosenTeamContainer {
+    width: 100%;
+
 }
 
 .cardUsed {
