@@ -25,8 +25,8 @@ export default function CardWithCooldown({
     const untilMs = cooldownUntil ? new Date(cooldownUntil).getTime() : 0;
     const remainingMs = Math.max(untilMs - now, 0);
 
-    const onCooldown = true;
-    // const onCooldown = remainingMs > 0;
+    // const onCooldown = true;
+    const onCooldown = remainingMs > 0;
 
     // format HH:MM:SS
     const h = String(Math.floor(remainingMs / 3600000)).padStart(2, '0');
