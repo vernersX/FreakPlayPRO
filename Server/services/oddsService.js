@@ -159,7 +159,9 @@ async function resolveMatches() {
               await bet.save();
 
               if (card) {
-                card.winStreak += 1;
+                // set a 1‑hour cooldown from now
+                card.cooldownUntil = new Date(Date.now() + 1 * 60 * 60 * 1000);
+                card.winStreak = 0;
                 card.isLocked = false;
                 await card.save();
               }

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom'; // <--- Notice we import these
 import styles from './BetFormModal.module.css';
 import { API_BASE_URL } from '../../config';
+import CardWithCooldown from '../CardWithCooldown/CardWithCooldown';
+
 
 function getOdds(selection, game) {
     if (selection === 'home') return game.homeOdds;
@@ -398,15 +400,12 @@ function BetFormModal({ game, telegramId, onClose, onBetSuccess, backgroundImg }
                                             }`}
                                         onClick={() => handleCardSelection(card.id)}
                                     >
-                                        <img
+                                        <CardWithCooldown
+                                            imageUrl={card.imageURL}
+                                            altText={card.rarity}
+                                            cooldownUntil={card.cooldownUntil}
                                             className={styles.cardImg}
-                                            src={card.imageURL}
-                                            alt={`${card.rarity} card`}
                                         />
-                                        <p>{card.rarity}</p>
-                                        <p>
-                                            Lives: {card.lives}/{card.maxLives}
-                                        </p>
                                     </div>
                                 ))}
                             </div>

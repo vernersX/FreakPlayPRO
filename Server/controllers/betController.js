@@ -28,6 +28,15 @@ async function placeBet(req, res) {
             await transaction.rollback();
             return res.status(404).json({ error: 'Card not found' });
         }
+
+        // 3.a) Prevent using a card on cooldown
+        if (card.cooldownUntil && new Date() < new Date(card.cooldownUntil)) {
+            await transaction.rollback();
+            return res
+                .status(400)
+                .json({ error: `Card is on cooldown until ${card.cooldownUntil.toISOString()}` });
+        }
+
         // Ensure the card belongs to this user
         if (card.userId !== user.id) {
             await transaction.rollback();

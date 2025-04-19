@@ -1,5 +1,7 @@
-// seed.js
+// Server/seed.js
+
 require('dotenv').config();
+
 const { connectToDB, syncModels, models } = require('./db/init');
 const { User, Card } = models;
 
@@ -8,39 +10,52 @@ async function seed() {
         await connectToDB();
         await syncModels();
 
-        // Create or find a fake user with telegramId '926460821'
+        // Create or find a fake user
         const [theUser] = await User.findOrCreate({
             where: { telegramId: '926460821' },
             defaults: { username: 'BossCaptain' },
         });
 
-        // Define some card types with different rarity and properties
+        // Define some card types (no more maxLives)
         const cardTypes = [
-            { rarity: 'common', baseValue: 5, maxLives: 2, imageURL: '/card-imgs/CardTennisBall.webp' },
-            // { rarity: 'common', baseValue: 5, maxLives: 2, imageURL: '/card-imgs/NeutralBall.png' },
-            // { rarity: 'rare', baseValue: 10, maxLives: 3, imageURL: 'https://static.wikia.nocookie.net/nintendo/images/e/e1/Pokemon_Charizard_Card.jpg/revision/latest/scale-to-width-down/354?cb=20060906214618&path-prefix=en' },
-            // { rarity: 'epic', baseValue: 20, maxLives: 4, imageURL: 'https://static.wikia.nocookie.net/nintendo/images/e/e1/Pokemon_Charizard_Card.jpg/revision/latest/scale-to-width-down/354?cb=20060906214618&path-prefix=en' },
-            // { rarity: 'legendary', baseValue: 50, maxLives: 5, imageURL: 'https://static.wikia.nocookie.net/nintendo/images/e/e1/Pokemon_Charizard_Card.jpg/revision/latest/scale-to-width-down/354?cb=20060906214618&path-prefix=en' },
+            {
+                rarity: 'common',
+                baseValue: 5,
+                imageURL: '/card-imgs/CardTennisBall.webp',
+            },
+            {
+                rarity: 'rare',
+                baseValue: 15,
+                imageURL: '/card-imgs/CardRugbyBall.webp',
+            },
+            {
+                rarity: 'epic',
+                baseValue: 30,
+                imageURL: '/card-imgs/CardBasketBall.webp',
+            },
+            // ...add as many as you like
         ];
 
         // Function to create random cards for a given user
         async function createRandomCardsForUser(user, count = 5) {
             for (let i = 0; i < count; i++) {
-                // Randomly pick one of the card types
                 const randomType = cardTypes[Math.floor(Math.random() * cardTypes.length)];
                 await Card.create({
-                    userId: theUser.id, // Note the capital "U" to match the association's foreign key
+                    userId: user.id,
                     rarity: randomType.rarity,
                     baseValue: randomType.baseValue,
-                    lives: randomType.maxLives, // Start with full lives
-                    maxLives: randomType.maxLives,
                     imageURL: randomType.imageURL,
+                    // new field: cards start ready to use
+                    cooldownUntil: null,
+                    // reset any other attrs you rely on:
+                    winStreak: 0,
+                    isLocked: false,
                 });
             }
         }
 
-        // Create 3 random cards for the fetched user
-        await createRandomCardsForUser(theUser, 5);
+        // Seed 5 cards for our demo user
+        await createRandomCardsForUser(theUser, 6);
 
         console.log('Seeding complete!');
         process.exit(0);

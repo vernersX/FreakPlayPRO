@@ -1,0 +1,43 @@
+/* src/components/CardWithCooldown/CardWithCooldown.module.css */
+
+.cardContainer {
+    position: relative;
+    display: inline-block;
+}
+
+.cardImage {
+    /* adjust these to your desired card dimensions */
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    display: block;
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 0.5rem 0.5rem 0rem 0rem;
+}
+
+.countdown {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: 700;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}

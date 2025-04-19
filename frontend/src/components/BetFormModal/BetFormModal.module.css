@@ -297,7 +297,7 @@ hr {
     background: #2e2e48;
     border-radius: 8px;
     color: #fff;
-    padding: 0.5rem;
+    /* padding: 0.5rem; */
     cursor: pointer;
 }
 

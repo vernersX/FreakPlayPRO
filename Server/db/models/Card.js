@@ -11,14 +11,6 @@ module.exports = (sequelize) => {
             type: DataTypes.FLOAT,
             allowNull: false,
         },
-        lives: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-        },
-        maxLives: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-        },
         winStreak: {
             type: DataTypes.INTEGER,
             allowNull: false,
@@ -32,6 +24,10 @@ module.exports = (sequelize) => {
             type: DataTypes.BOOLEAN,
             allowNull: false,
             defaultValue: false,
+        },
+        cooldownUntil: {
+            type: DataTypes.DATE,
+            allowNull: true,
         },
     });
     return Card;
