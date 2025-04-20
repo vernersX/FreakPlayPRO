@@ -29,14 +29,23 @@ module.exports = (sequelize) => {
             type: DataTypes.DATE,
             allowNull: true,
         },
-        hasShield : {
+        hasShield: {
             type: DataTypes.BOOLEAN,
             defaultValue: false
-          },
-          cooldownMultiplier : {
+        },
+        cooldownMultiplier: {
             type: DataTypes.FLOAT,
             defaultValue: 1      // 1 = normal speed
-          },
+        },
+        coinBoostMultiplier: {
+            type: DataTypes.FLOAT,
+            allowNull: false,
+            defaultValue: 1
+        },
+        coinBoostExpiresAt: {
+            type: DataTypes.DATE,
+            allowNull: true
+        }
     });
     return Card;
 };

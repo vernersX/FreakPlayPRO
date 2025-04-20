@@ -1,18 +1,17 @@
 // client/src/components/Inventory/CardItem.jsx
-import React from 'react';
+import React, { useEffect } from 'react';
 import styles from './CardItem.module.css';
 import CardWithCooldown from '../CardWithCooldown/CardWithCooldown';
 
 
 function CardItem({ card }) {
-    const boostActive =
-    card.coinBoostMultiplier &&
-    card.coinBoostExpiresAt &&
-    new Date(card.coinBoostExpiresAt) > Date.now();
+    const boosted =
+        card.coinBoostExpiresAt &&
+        new Date(card.coinBoostExpiresAt) > new Date();
 
 
     return (
-        <div className={`${styles.cardItem} ${boostActive ? styles.boosted : ''}`}>
+        <div className={`${styles.cardItem}${boosted ? ` ${styles.boosted}` : ''}`}>
             <CardWithCooldown
                 imageUrl={card.imageURL}
                 cooldownUntil={card.cooldownUntil}

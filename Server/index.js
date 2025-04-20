@@ -12,6 +12,8 @@ const inventoryRoutes = require('./routes/inventory');
 const marketplaceRoutes = require('./routes/marketplace');
 const sportRoutes = require('./routes/sport');
 const leagueRoutes = require('./routes/leagues');
+
+const adminRouter = require('./routes/admin');
 // services
 const oddsService = require('./services/oddsService');
 const telegramService = require('./services/telegramService');
@@ -34,6 +36,9 @@ app.use('/api/auctions', auctionsRoutes);
 app.use('/api/marketplace', marketplaceRoutes);
 app.use('/api/sports', sportRoutes);
 app.use('/api/leagues', leagueRoutes);
+
+
+app.use('/api/admin', adminRouter);
 
 // Manual odds sync endpoint
 app.get('/api/odds/sync', async (req, res) => {

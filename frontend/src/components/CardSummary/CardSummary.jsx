@@ -5,8 +5,12 @@ import CardWithCooldown from '../CardWithCooldown/CardWithCooldown';
 
 
 function CardSummary({ card }) {
+    const boosted =
+        card.coinBoostExpiresAt &&
+        new Date(card.coinBoostExpiresAt) > new Date();
+
     return (
-        <div className={styles.cardSummary}>
+        <div className={`${styles.cardSummary}${boosted ? ` ${styles.boosted}` : ''}`}>
             <CardWithCooldown
                 imageUrl={card.imageURL}
                 cooldownUntil={card.cooldownUntil}

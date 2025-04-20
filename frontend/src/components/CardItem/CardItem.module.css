@@ -9,6 +9,5 @@
 }
 
 .boosted {
-    box-shadow: 0 0 0 4px #ffd700;
-    border-radius: 8px;
+    border: 2px solid yellow !important;
 }

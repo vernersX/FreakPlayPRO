@@ -1,7 +1,12 @@
 .cardSummary {
     width: 100%;
+    box-sizing: border-box;
 }
 
 .cardSummary img {
     width: 100%;
+}
+
+.boosted {
+    border: 2px solid yellow !important;
 }
