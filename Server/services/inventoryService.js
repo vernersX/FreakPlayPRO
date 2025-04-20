@@ -1,70 +1,90 @@
-// backend/services/inventoryService.js
+// --------------------------------------------------------------
+//  Inventory‐related helpers: list cards / items, use an item
+// --------------------------------------------------------------
 const { models } = require('../db/init');
-const { Card, InventoryItem, Item } = models;
-const itemEffects = require('./itemEffects');
+const itemEffects = require('./itemEffects');       // lookup table
 
+const { User, Card, Item, InventoryItem } = models;
 
-/**
- * Returns all trading cards owned by the user.
- * @param {number} userId 
- */
+/*───────────────────────────────────────────────────────────────
+ ▸  Utilities
+ ───────────────────────────────────────────────────────────────*/
+
+/** Return all (non‑deleted) cards that belong to a user (for UI). */
 async function listUserCards(userId) {
     return Card.findAll({ where: { userId } });
 }
 
-/**
- * Returns all inventory items owned by the user, including item details.
- * @param {number} userId 
- */
+/** Return inventory items + their Item metadata for a user. */
 async function listUserItems(userTelegramId) {
     return InventoryItem.findAll({
         where: { UserTelegramId: userTelegramId },
-        include: [Item],
+        include: [{ model: Item }]
     });
 }
 
-/**
- * Applies an inventory item’s effect to a card.
- * For example, if the item type is "restore_life", it increases the card’s lives by 1 (up to maxLives).
- * @param {number} userId 
- * @param {number} inventoryItemId 
- * @param {number} targetCardId 
- */
-async function useItem(userTelegramId, inventoryItemId, targetCardId) {
-    // 1) Find the inventory item including its associated Item details.
-    const invItem = await InventoryItem.findByPk(inventoryItemId, { include: [Item] });
-    if (!invItem || invItem.userTelegramId !== userTelegramId) {
-        throw new Error('Item not found or not owned by user');
-    }
-
-    // 2) Find the target card.
-    const card = await Card.findByPk(targetCardId);
-    if (!card || card.userTelegramId !== userTelegramId) {
-        throw new Error('Card not found or not owned by user');
-    }
-
-    // 3) Determine the effect based on the item type.
-    const effect = itemEffects[invItem.Item.type];
-    if (!effect) {
-        throw new Error('Unknown item type');
-    }
-
-    // 4) Execute the effect.
-    await effect({ id: userTelegramId }, card, invItem, invItem.Item.metadata);
-
-    // 5) Deduct one usage from the inventory item.
-    invItem.quantity -= 1;
-    if (invItem.quantity <= 0) {
-        await invItem.destroy();
+/** Decrease quantity and delete the InventoryItem if it reaches 0. */
+async function consumeInventoryItem(inventoryItem, qty = 1) {
+    inventoryItem.quantity -= qty;
+    if (inventoryItem.quantity <= 0) {
+        await inventoryItem.destroy();
     } else {
-        await invItem.save();
+        await inventoryItem.save();
     }
-
-    return { card, usedItem: invItem.Item };
 }
 
+/*───────────────────────────────────────────────────────────────
+ ▸  Main entry – called by the /api/inventory/use‑item route
+ ───────────────────────────────────────────────────────────────*/
+
+/**
+ * @param {string} telegramId        user who is using the item
+ * @param {number} inventoryItemId   primary key in InventoryItem table
+ * @param {number|null} targetCardId card id if the item needs one
+ */
+async function useItem(telegramId, inventoryItemId, targetCardId = null) {
+    // 1)  Validate user
+    const user = await User.findOne({ where: { telegramId } });
+    if (!user) throw new Error('User not found');
+
+    // 2)  Validate inventory item belongs to user and still has quantity
+    const inventoryItem = await InventoryItem.findOne({
+        where: { id: inventoryItemId, UserTelegramId: telegramId },
+        include: [{ model: Item }]
+    });
+    if (!inventoryItem || inventoryItem.quantity <= 0) {
+        throw new Error('Item not found in inventory');
+    }
+
+    const { Item: item } = inventoryItem;           // convenience alias
+
+    // 3)  Fetch target card if provided
+    let targetCard = null;
+    if (targetCardId) {
+        targetCard = await Card.findOne({
+            where: { id: targetCardId, userId: user.id }
+        });
+        if (!targetCard) throw new Error('Target card not found');
+    }
+
+    // 4)  Lookup effect function
+    const effectFn = itemEffects[item.type];
+    if (!effectFn) throw new Error(`No effect implemented for ${item.type}`);
+
+    // 5)  Execute effect (may throw)
+    await effectFn(user, targetCard, inventoryItem, item.metadata);
+
+    // 6)  Consume one quantity *after* successful effect
+    await consumeInventoryItem(inventoryItem);
+
+    return { message: `${item.type} used successfully` };
+}
+
+/*───────────────────────────────────────────────────────────────
+ ▸  Exports
+ ───────────────────────────────────────────────────────────────*/
 module.exports = {
     listUserCards,
     listUserItems,
-    useItem,
+    useItem      // used by routes/inventory.js
 };

@@ -5,8 +5,14 @@ import CardWithCooldown from '../CardWithCooldown/CardWithCooldown';
 
 
 function CardItem({ card }) {
+    const boostActive =
+    card.coinBoostMultiplier &&
+    card.coinBoostExpiresAt &&
+    new Date(card.coinBoostExpiresAt) > Date.now();
+
+
     return (
-        <div className={styles.cardItem}>
+        <div className={`${styles.cardItem} ${boostActive ? styles.boosted : ''}`}>
             <CardWithCooldown
                 imageUrl={card.imageURL}
                 cooldownUntil={card.cooldownUntil}
@@ -16,7 +22,6 @@ function CardItem({ card }) {
             <div>
                 <p>Rarity: {card.rarity}</p>
                 <p>Base Value: {card.baseValue}</p>
-                {/* <p>Lives: {card.lives}/{card.maxLives}</p> */}
                 <p>Win Streak: {card.winStreak}</p>
                 <p>Status: {card.isLocked ? 'In Use' : 'Available'}</p>
             </div>

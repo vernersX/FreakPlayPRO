@@ -1,0 +1,92 @@
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1100;
+}
+
+.sheet {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-height: 90vh;
+    background: #251328;
+    border-radius: 16px 16px 0 0;
+    padding: 1rem;
+    animation: slideUp 0.25s ease forwards;
+    overflow-y: auto;
+    color: #fff;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+.title {
+    text-transform: capitalize;
+    margin: 0 0 .5rem 0;
+    text-align: center;
+}
+
+.question {
+    text-align: center;
+    margin-bottom: .75rem;
+}
+
+.cardGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: .5rem;
+    margin-bottom: 1rem;
+}
+
+.cardBox {
+    cursor: pointer;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform .15s;
+}
+
+.cardBox:hover {
+    transform: scale(1.04);
+}
+
+.selected {
+    outline: 3px solid #ff3344;
+}
+
+.btnRow {
+    display: flex;
+    justify-content: space-between;
+    gap: .75rem;
+}
+
+.cancel {
+    flex: 1;
+    padding: .6rem;
+    background: transparent;
+    border: 1px solid #aaa;
+    color: #aaa;
+    border-radius: 8px;
+}
+
+.confirm {
+    flex: 1;
+    padding: .6rem;
+    background: #ff3344;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.confirm:disabled {
+    opacity: .5;
+}

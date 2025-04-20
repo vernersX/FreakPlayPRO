@@ -1,75 +1,55 @@
-// controllers/marketplaceController.js
 const { models } = require('../db/init');
+const itemEffects = require('../services/itemEffects');
 const { User, Item, InventoryItem } = models;
 
 async function listMarketplaceItems(req, res) {
     try {
-        // Fetch all available items
         const items = await Item.findAll();
-        res.json(items);
+        return res.json(items);
     } catch (error) {
         console.error("Error fetching marketplace items:", error);
-        res.status(500).json({ error: "Internal Server Error" });
+        return res.status(500).json({ error: "Internal Server Error" });
     }
 }
 
-// controllers/marketplaceController.js
 async function purchaseItem(req, res) {
     try {
-        console.log('purchaseItem - body:', req.body); // Debug
         const { telegramId, itemId, quantity } = req.body;
         const qty = quantity || 1;
 
-        // 1) Find user by telegramId
         const user = await User.findOne({ where: { telegramId } });
-        console.log('purchaseItem - found user:', user); // Debug
+        if (!user) return res.status(404).json({ error: 'User not found' });
 
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-
-        // 2) Find item
         const item = await Item.findByPk(itemId);
-        console.log('purchaseItem - found item:', item); // Debug
+        if (!item) return res.status(404).json({ error: 'Item not found' });
 
-        if (!item) {
-            return res.status(404).json({ error: 'Item not found' });
-        }
-
-        // 3) Check price in metadata
         const price = item.metadata?.price;
         if (price === undefined) {
             return res.status(400).json({ error: 'Item price not set' });
         }
 
-        // 4) Check user has enough coins
         const totalCost = price * qty;
         if (user.coins < totalCost) {
             return res.status(400).json({ error: 'Insufficient coins' });
         }
 
-        // Deduct coins
         user.coins -= totalCost;
         await user.save();
 
-        // 5) Find or create an InventoryItem
         let inventoryItem = await InventoryItem.findOne({
-            where: { UserTelegramId: user.telegramId, ItemId: item.id },
+            where: { UserTelegramId: telegramId, ItemId: item.id },
         });
-        console.log('purchaseItem - existing inventoryItem:', inventoryItem); // Debug
 
         if (inventoryItem) {
             inventoryItem.quantity += qty;
             await inventoryItem.save();
         } else {
             inventoryItem = await InventoryItem.create({
-                UserTelegramId: user.telegramId,
+                UserTelegramId: telegramId,
                 quantity: qty,
                 ItemId: item.id,
             });
         }
-
-        console.log('purchaseItem - final inventoryItem:', inventoryItem); // Debug
 
         return res.json({
             message: 'Purchase successful',
@@ -82,7 +62,44 @@ async function purchaseItem(req, res) {
     }
 }
 
+async function useItem(req, res) {
+    try {
+        const { telegramId, itemId, metadataOverride } = req.body;
+        const user = await User.findOne({ where: { telegramId } });
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        const inventoryItem = await InventoryItem.findOne({
+            where: { UserTelegramId: telegramId, ItemId: itemId }
+        });
+        if (!inventoryItem || inventoryItem.quantity < 1) {
+            return res.status(400).json({ error: 'Item not in inventory' });
+        }
+
+        const item = await Item.findByPk(itemId);
+        const effect = itemEffects[item.type];
+        if (!effect) {
+            return res.status(400).json({ error: 'No effect defined for this item' });
+        }
+
+        // Run the effect
+        await effect(user, null, inventoryItem, {
+            ...item.metadata,
+            ...metadataOverride
+        });
+
+        // Consume one
+        inventoryItem.quantity -= 1;
+        await inventoryItem.save();
+
+        return res.json({ success: true, remaining: inventoryItem.quantity });
+    } catch (error) {
+        console.error('Error using item:', error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+}
+
 module.exports = {
     listMarketplaceItems,
     purchaseItem,
+    useItem,
 };

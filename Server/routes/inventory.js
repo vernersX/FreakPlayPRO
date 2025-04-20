@@ -2,15 +2,19 @@
 const express = require('express');
 const router = express.Router();
 const { models } = require('../db/init');
-const { listUserCards, listUserItems, useItem } = require('../services/inventoryService');
+const {
+    listUserCards,
+    listUserItems,
+    useItem
+} = require('../services/inventoryService');
 
-// GET /api/inventory/cards?telegramId=...
+/* ───────────────  GET /api/inventory/cards  ─────────────── */
 router.get('/cards', async (req, res) => {
     try {
         const { telegramId } = req.query;
-        const { User } = models;
-        const user = await User.findOne({ where: { telegramId } });
+        const user = await models.User.findOne({ where: { telegramId } });
         if (!user) return res.status(404).json({ error: 'User not found' });
+
         const cards = await listUserCards(user.id);
         res.json(cards);
     } catch (err) {
@@ -19,13 +23,13 @@ router.get('/cards', async (req, res) => {
     }
 });
 
-// GET /api/inventory/items?telegramId=...
+/* ───────────────  GET /api/inventory/items  ─────────────── */
 router.get('/items', async (req, res) => {
     try {
         const { telegramId } = req.query;
-        const { User } = models;
-        const user = await User.findOne({ where: { telegramId } });
+        const user = await models.User.findOne({ where: { telegramId } });
         if (!user) return res.status(404).json({ error: 'User not found' });
+
         const items = await listUserItems(user.telegramId);
         res.json(items);
     } catch (err) {
@@ -34,18 +38,15 @@ router.get('/items', async (req, res) => {
     }
 });
 
-// POST /api/inventory/use-item
+/* ───────────────  POST /api/inventory/use-item  ─────────────── */
 router.post('/use-item', async (req, res) => {
     try {
         const { telegramId, inventoryItemId, targetCardId } = req.body;
-        const { User } = models;
-        const user = await User.findOne({ where: { telegramId } });
-        if (!user) return res.status(404).json({ error: 'User not found' });
-        const result = await useItem(user.telegramId, inventoryItemId, targetCardId);
+        const result = await useItem(telegramId, inventoryItemId, targetCardId);
         res.json(result);
     } catch (err) {
         console.error('Error using item:', err);
-        res.status(500).json({ error: err.message || 'Failed to use item' });
+        res.status(400).json({ error: err.message || 'Failed to use item' });
     }
 });
 

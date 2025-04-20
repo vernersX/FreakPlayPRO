@@ -29,6 +29,14 @@ module.exports = (sequelize) => {
             type: DataTypes.DATE,
             allowNull: true,
         },
+        hasShield : {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false
+          },
+          cooldownMultiplier : {
+            type: DataTypes.FLOAT,
+            defaultValue: 1      // 1 = normal speed
+          },
     });
     return Card;
 };
