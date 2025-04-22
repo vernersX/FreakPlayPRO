@@ -15,7 +15,7 @@ router.get('/cards', async (req, res) => {
         const user = await models.User.findOne({ where: { telegramId } });
         if (!user) return res.status(404).json({ error: 'User not found' });
 
-        const cards = await listUserCards(user.id);
+        const cards = await listUserCards(user.telegramId);
         res.json(cards);
     } catch (err) {
         console.error('Error fetching cards:', err);

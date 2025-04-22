@@ -11,8 +11,8 @@ const { User, Card, Item, InventoryItem } = models;
  ───────────────────────────────────────────────────────────────*/
 
 /** Return all (non‑deleted) cards that belong to a user (for UI). */
-async function listUserCards(userId) {
-    return Card.findAll({ where: { userId } });
+async function listUserCards(userTelegramId) {
+    return Card.findAll({ where: { userId: userTelegramId } });
 }
 
 /** Return inventory items + their Item metadata for a user. */
