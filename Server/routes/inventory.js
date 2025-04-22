@@ -1,4 +1,4 @@
-// backend/routes/inventory.js
+// Server/routes/inventory.js
 const express = require('express');
 const router = express.Router();
 const { models } = require('../db/init');
@@ -15,7 +15,7 @@ router.get('/cards', async (req, res) => {
         const user = await models.User.findOne({ where: { telegramId } });
         if (!user) return res.status(404).json({ error: 'User not found' });
 
-        const cards = await listUserCards(user.telegramId);
+        const cards = await listUserCards(user.id);
         res.json(cards);
     } catch (err) {
         console.error('Error fetching cards:', err);

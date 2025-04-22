@@ -1,13 +1,20 @@
-// controllers/betController.js
+// Server/controllers/betController.js
+
 const { models, sequelize } = require('../db/init');
 const { User, Match, Bet, Card } = models;
 const { Op } = require('sequelize');
 
 async function placeBet(req, res) {
     const transaction = await sequelize.transaction();
-
     try {
-        const { telegramId, matchId, selection, cardId } = req.body;
+        const { telegramId, matchId, predictedOutcome, cardIds } = req.body;
+        const selection = predictedOutcome;
+
+        // Validate that we got an array of 1–3 card IDs
+        if (!Array.isArray(cardIds) || cardIds.length < 1 || cardIds.length > 3) {
+            await transaction.rollback();
+            return res.status(400).json({ error: 'You must bet with between 1 and 3 cards' });
+        }
 
         // 1) Find user by telegramId
         const user = await User.findOne(
@@ -26,24 +33,30 @@ async function placeBet(req, res) {
             return res.status(404).json({ error: 'Match not found' });
         }
 
-        // 3) Retrieve the card
-        const card = await Card.findByPk(cardId, { transaction });
-        if (!card) {
+        // 3) Fetch all requested cards
+        const cards = await Card.findAll({
+            where: { id: cardIds },
+            transaction
+        });
+        if (cards.length !== cardIds.length) {
             await transaction.rollback();
-            return res.status(404).json({ error: 'Card not found' });
+            return res.status(404).json({ error: 'One or more cards not found' });
         }
 
-        // Ensure the card belongs to this user (by telegramId)
-        if (card.userId !== user.telegramId) {
-            await transaction.rollback();
-            return res.status(400).json({ error: 'This card does not belong to you' });
-        }
-        if (card.isLocked) {
-            await transaction.rollback();
-            return res.status(400).json({ error: 'Card is currently in use' });
+        // 4) Ensure ownership and availability
+        for (const c of cards) {
+            // now comparing numeric user.id
+            if (c.userId !== user.id) {
+                await transaction.rollback();
+                return res.status(400).json({ error: 'One or more cards do not belong to you' });
+            }
+            if (c.isLocked) {
+                await transaction.rollback();
+                return res.status(400).json({ error: 'One or more cards are currently in use' });
+            }
         }
 
-        // 4) Determine odds
+        // 5) Determine odds
         let oddsValue;
         if (selection === 'home') oddsValue = match.homeOdds;
         else if (selection === 'away') oddsValue = match.awayOdds;
@@ -53,28 +66,34 @@ async function placeBet(req, res) {
             return res.status(400).json({ error: 'Invalid selection or odds not available' });
         }
 
-        // 5) Lock card & create bet record (use telegramId as userId)
-        card.isLocked = true;
-        await card.save({ transaction });
+        // 6) Lock all cards
+        for (const c of cards) {
+            c.isLocked = true;
+            await c.save({ transaction });
+        }
 
+        // 7) Compute total stake
+        const totalStake = cards.reduce((sum, c) => sum + c.baseValue, 0);
+
+        // 8) Create the Bet record, using numeric user.id for the FK
         const newBet = await Bet.create({
-            userId: user.telegramId,   // <<< use telegramId here
+            userId: user.id,          // ← use user.id, not telegramId
             matchId: match.id,
             selection,
-            stake: card.baseValue,
+            stake: totalStake,
             odds: oddsValue,
             status: 'pending',
             payout: null,
-            cardId: card.id
+            cardIds                 // JSON array of selected card IDs
         }, { transaction });
 
         await transaction.commit();
-        res.json({ message: 'Bet placed successfully', bet: newBet });
+        return res.json({ message: 'Bet placed successfully', bet: newBet });
 
-    } catch (error) {
+    } catch (err) {
         await transaction.rollback();
-        console.error('Error placing bet:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        console.error('Error placing bet:', err);
+        return res.status(400).json({ error: err.message || 'Internal Server Error' });
     }
 }
 
@@ -86,7 +105,7 @@ async function getMyBets(req, res) {
 
         const pendingBets = await Bet.findAll({
             where: {
-                userId: user.telegramId,   // <<< use telegramId
+                userId: user.id,          // ← filter by numeric id
                 status: 'pending'
             },
             include: [Match, Card]
@@ -107,7 +126,7 @@ async function getBetHistory(req, res) {
 
         const finishedBets = await Bet.findAll({
             where: {
-                userId: user.telegramId,   // <<< use telegramId
+                userId: user.id,          // ← filter by numeric id
                 status: { [Op.in]: ['won', 'lost'] }
             },
             include: [Match, Card]
@@ -128,7 +147,7 @@ async function getBetForMatch(req, res) {
 
         const existingBet = await Bet.findOne({
             where: {
-                userId: user.telegramId,  // <<< use telegramId
+                userId: user.id,          // ← filter by numeric id
                 matchId,
                 status: 'pending'
             },
@@ -142,4 +161,9 @@ async function getBetForMatch(req, res) {
     }
 }
 
-module.exports = { placeBet, getMyBets, getBetHistory, getBetForMatch };
+module.exports = {
+    placeBet,
+    getMyBets,
+    getBetHistory,
+    getBetForMatch
+};
