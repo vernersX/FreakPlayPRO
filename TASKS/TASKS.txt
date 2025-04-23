@@ -1,0 +1,36 @@
+Okay, hello sir, here we have the list of the tasks, lets smash them.
+
+1. Add cooldowns - DONE, needs testing. ✅
+
+2. Multi-card bet - DONE, needs css ✅
+
+3. Make items usable - in progress ⌛️
+
+4. Add ball rarity - needs more details 🔵
+
+5. Add ball skins - on hold 🔵
+
+6. Inventory design - 
+
+7. Marketplace design - 
+
+8. Daily/weekly tasks - 
+
+9. User profile - 
+
+10. Leaderboard - needs more details
+
+11. Match card design - needs more images
+
+12. League responsive elements - we got the SVGs, just needs to make a helper function that will filter the SVG icon by the sports league
+
+13. Telegram implementation - When user upens the mini-app in telegram their profile is automatically registered. Requires projects deployment.
+
+18. Action-completed notifications - when an action has been completed (placed bet, bought item, used item...etc) a visual notification is required.
+
+
+Low priority tasks:
+14. Ball skin pokedex - 
+15. New user onboarding - 
+16. Visual fixes - 
+17. Mini-game development - this tasks is after the whole apps functionality is done
