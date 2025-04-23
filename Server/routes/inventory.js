@@ -1,6 +1,8 @@
 // Server/routes/inventory.js
+
 const express = require('express');
 const router = express.Router();
+
 const { models } = require('../db/init');
 const {
     listUserCards,
@@ -8,13 +10,12 @@ const {
     useItem
 } = require('../services/inventoryService');
 
-/* ───────────────  GET /api/inventory/cards  ─────────────── */
+/* ───── GET /api/inventory/cards ───── */
 router.get('/cards', async (req, res) => {
     try {
         const { telegramId } = req.query;
         const user = await models.User.findOne({ where: { telegramId } });
         if (!user) return res.status(404).json({ error: 'User not found' });
-
         const cards = await listUserCards(user.id);
         res.json(cards);
     } catch (err) {
@@ -23,13 +24,12 @@ router.get('/cards', async (req, res) => {
     }
 });
 
-/* ───────────────  GET /api/inventory/items  ─────────────── */
+/* ───── GET /api/inventory/items ───── */
 router.get('/items', async (req, res) => {
     try {
         const { telegramId } = req.query;
         const user = await models.User.findOne({ where: { telegramId } });
         if (!user) return res.status(404).json({ error: 'User not found' });
-
         const items = await listUserItems(user.telegramId);
         res.json(items);
     } catch (err) {
@@ -38,11 +38,12 @@ router.get('/items', async (req, res) => {
     }
 });
 
-/* ───────────────  POST /api/inventory/use-item  ─────────────── */
+/* ───── POST /api/inventory/use-item ───── */
 router.post('/use-item', async (req, res) => {
     try {
-        const { telegramId, inventoryItemId, targetCardId } = req.body;
-        const result = await useItem(telegramId, inventoryItemId, targetCardId);
+        // now extracting selectedCardIds from the body
+        const { telegramId, inventoryItemId, targetCardId, selectedCardIds } = req.body;
+        const result = await useItem(telegramId, inventoryItemId, targetCardId, selectedCardIds);
         res.json(result);
     } catch (err) {
         console.error('Error using item:', err);

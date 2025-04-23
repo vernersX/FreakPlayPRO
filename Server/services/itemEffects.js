@@ -4,6 +4,7 @@
 // --------------------------------------------------------------
 const { models } = require('../db/init');
 const { Card } = models;
+const rarities = require('../constants/rarities');
 
 /*───────────────────────────────────────────────────────────────
  1)  Coin Boost   (needs a card)
@@ -42,6 +43,7 @@ async function ballMergeEffect(user, _card, _invItem, metadata) {
         throw new Error('ball_merge requires exactly two card IDs');
     }
 
+    // load both cards, ensure same user & same rarity
     const cards = await Card.findAll({
         where: { id: pair, userId: user.id }
     });
@@ -49,24 +51,27 @@ async function ballMergeEffect(user, _card, _invItem, metadata) {
         throw new Error('Cards must exist and share the same rarity');
     }
 
-    const rarities = [
-        'Tennis',                 // Rookie
-        'American football ball', // Tactician
-        'Basketball',             // Playmaker
-        'Football',               // Striker
-        'Trophy ball'             // Allstar
-    ];
+    // find where they sit in the ladder
     const idx = rarities.indexOf(cards[0].rarity);
-    if (idx === -1 || idx === rarities.length - 1) {
+    if (idx < 0) {
+        throw new Error(`Unknown rarity: ${cards[0].rarity}`);
+    }
+    if (idx === rarities.length - 1) {
         throw new Error('Cannot merge at highest rarity');
     }
+
+    // compute next step
     const nextRarity = rarities[idx + 1];
 
+    // delete the old two…
     await Card.destroy({ where: { id: pair } });
+
+    // …and create the new one with doubled baseValue
     await Card.create({
         userId: user.id,
         rarity: nextRarity,
-        baseValue: cards[0].baseValue * 2
+        baseValue: cards[0].baseValue * 2,
+        imageURL: metadata.nextImageURL || cards[0].imageURL // optional
     });
 
     console.log(`Merged two ${cards[0].rarity} → one ${nextRarity}`);
