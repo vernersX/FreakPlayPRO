@@ -1,78 +1,100 @@
+// Server/index.js
+
 require('dotenv').config();
+const path = require('path');
 const express = require('express');
 const cors = require('cors');
-const { connectToDB, syncModels } = require('./db/init');
-// routes
-const userRoutes = require('./routes/users');
-const matchRoutes = require('./routes/matches');
-const betRoutes = require('./routes/bets');
-const cardsRoutes = require('./routes/cards');
-const auctionsRoutes = require('./routes/auctions');
-const inventoryRoutes = require('./routes/inventory');
-const marketplaceRoutes = require('./routes/marketplace');
-const sportRoutes = require('./routes/sport');
-const leagueRoutes = require('./routes/leagues');
-
-const adminRouter = require('./routes/admin');
-// services
-const oddsService = require('./services/oddsService');
-const telegramService = require('./services/telegramService');
-const sportService = require('./services/sportService');
 const cron = require('node-cron');
 
+// DB & models
+const { connectToDB, syncModels } = require('./db/init');
+
+// Services
+const oddsService = require('./services/oddsService');
+const sportService = require('./services/sportService');
+const telegramService = require('./services/telegramService');
+
+// Routers
+const usersRouter = require('./routes/users');
+const matchesRouter = require('./routes/matches');
+const betsRouter = require('./routes/bets');
+const inventoryRouter = require('./routes/inventory');
+const cardsRouter = require('./routes/cards');
+const auctionsRouter = require('./routes/auctions');
+const marketplaceRouter = require('./routes/marketplace');
+const sportsRouter = require('./routes/sports');
+const leaguesRouter = require('./routes/leagues');
+const adminRouter = require('./routes/admin');
+
 const app = express();
-app.use(cors());
+
+// ─── Middleware ──────────────────────────────────────────────────────────────
+app.use(cors({
+  origin: process.env.ALLOWED_ORIGIN || '*'  // tighten this in production!
+}));
 app.use(express.json());
 
-app.set('models', require('./db/init').models);
-
-// Mount API routes
-app.use('/api/users', userRoutes);
-app.use('/api/matches', matchRoutes);
-app.use('/api/bets', betRoutes);
-app.use('/api/inventory', inventoryRoutes);
-app.use('/api/cards', cardsRoutes);
-app.use('/api/auctions', auctionsRoutes);
-app.use('/api/marketplace', marketplaceRoutes);
-app.use('/api/sports', sportRoutes);
-app.use('/api/leagues', leagueRoutes);
-
-
+// ─── API Routes ───────────────────────────────────────────────────────────────
+app.use('/api/users', usersRouter);
+app.use('/api/matches', matchesRouter);
+app.use('/api/bets', betsRouter);
+app.use('/api/inventory', inventoryRouter);
+app.use('/api/cards', cardsRouter);
+app.use('/api/auctions', auctionsRouter);
+app.use('/api/marketplace', marketplaceRouter);
+app.use('/api/sports', sportsRouter);
+app.use('/api/leagues', leaguesRouter);
 app.use('/api/admin', adminRouter);
 
-// Manual odds sync endpoint
-app.get('/api/odds/sync', async (req, res) => {
+// ─── Static React Build ──────────────────────────────────────────────────────
+// Serve frontend/build as static assets
+app.use(express.static(path.join(__dirname, '../frontend/build')));
+
+// For any other request (that doesn't match /api/*), send back React's index.html
+app.get('/*', (req, res) => {
+  res.sendFile(
+    path.join(__dirname, '../frontend/build', 'index.html'),
+    err => {
+      if (err) {
+        console.error('Error sending React app:', err);
+        res.status(500).send(err);
+      }
+    }
+  );
+});
+
+// ─── Startup ─────────────────────────────────────────────────────────────────
+const PORT = process.env.PORT || 3001;
+
+async function start() {
   try {
+    // 1) Connect & sync DB
+    await connectToDB();
+    await syncModels();
+
+    // 2) Initial data pulls
     await oddsService.fetchAllOdds();
-    res.json({ message: 'Manual sync for all sports complete!' });
-  } catch (error) {
-    console.error('Error syncing odds:', error);
-    res.status(500).json({ error: 'Failed to sync odds' });
-  }
-});
+    await sportService.updateAllSports();
 
-// Start server after database is ready
-connectToDB().then(() => {
-  syncModels().then(() => {
-    const PORT = process.env.PORT || 3001;
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
+    // 3) Launch Telegram bot
+    telegramService.launchBot();
 
-      // Immediately fetch odds on startup
-      oddsService.fetchAllOdds();
-
-      // Immediately fetch all sports on startup
-      sportService.updateAllSports();
-
-      // Schedule periodic tasks every 15 minutes
-      cron.schedule('*/15 * * * *', async () => {
-        await oddsService.fetchAllOdds();
-        await oddsService.resolveMatches();
-      });
-
-      // Launch the Telegram bot
-      telegramService.launchBot();
+    // 4) Schedule recurring tasks (every 15 minutes)
+    cron.schedule('*/15 * * * *', async () => {
+      console.log('⏱️  Running scheduled refresh…');
+      await oddsService.fetchAllOdds();
+      await sportService.updateAllSports();
     });
-  });
-});
 
+    // 5) Start server
+    app.listen(PORT, () =>
+      console.log(`🚀 Server listening on port ${PORT}`)
+    );
+
+  } catch (err) {
+    console.error('❌ Failed to start server:', err);
+    process.exit(1);
+  }
+}
+
+start();
