@@ -1,4 +1,5 @@
 Okay, hello sir, here we have the list of the tasks, lets smash them.
+Heyo, sir, lets get it done!
 
 1. Add cooldowns - DONE, needs testing. ✅
 
