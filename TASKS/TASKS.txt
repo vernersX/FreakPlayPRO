@@ -5,9 +5,9 @@ Heyo, sir, lets get it done!
 
 2. Multi-card bet - DONE, needs css ✅
 
-3. Make items usable - in progress ⌛️
+3. Make items usable - in progress by the code god⌛️
 
-4. Add ball rarity - needs more details 🔵
+4. Add ball rarity - DONE DONE ✅
 
 5. Add ball skins - on hold 🔵
 
