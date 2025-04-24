@@ -1,4 +1,11 @@
-import React, { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
+// frontend/src/components/ProfileInfo/ProfileInfo.jsx
+
+import React, {
+    useEffect,
+    useState,
+    forwardRef,
+    useImperativeHandle
+} from 'react';
 import styles from './ProfileInfo.module.css';
 import { API_BASE_URL } from '../../config';
 import { formatCoins } from '../../utils/formatCoins';
@@ -6,11 +13,11 @@ import logo from '../../imgs/logo.png';
 import profilePic from '../../imgs/ProfilePic.png';
 import ballsPic from '../../imgs/BallsCoin.png';
 import { Link } from 'react-router-dom';
-
-
+import ProfileModal from '../ProfileModal/ProfileModal';
 
 function ProfileInfoComponent({ telegramId }, ref) {
     const [user, setUser] = useState(null);
+    const [showModal, setShowModal] = useState(false);
 
     async function fetchUser(tgId) {
         try {
@@ -41,34 +48,64 @@ function ProfileInfoComponent({ telegramId }, ref) {
     }
 
     return (
-        <div className={styles.profileContainer}>
-            <div className={styles.logoContainer}>
-                <Link className={styles.navItem} to="/">
-                    <img className={styles.logoImg} src={logo} alt='ļogo' />
-                </Link>
-            </div>
-            <div className={styles.headerProfileContainer} >
-                <div className={styles.coinsContainer}>
-                    <p className={styles.coins}>{formatCoins(user.coins)}</p>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28" fill="none">
-                        <g clip-path="url(#clip0_133_89)">
-                            <path d="M14 0C6.26857 0 0 6.26857 0 14C0 21.7314 6.26857 28 14 28C21.7314 28 28 21.7314 28 14C28 6.26857 21.7314 0 14 0ZM26.36 17.9257C26.2286 17.9429 26.12 18.4857 26.0743 18.6C25.8514 19.1886 25.5657 19.7486 25.2629 20.2971C25.0171 20.7314 24.7429 21.1429 24.4514 21.5486C24.28 21.7886 24.0971 22.0114 23.9086 22.2343C23.8229 22.3429 23.4914 22.5886 23.64 22.64C23.6343 22.6457 23.6343 22.6457 23.6286 22.6514C23.2114 22.6514 22.7943 22.6514 22.3771 22.6514C21.4686 22.6514 20.5543 22.6514 19.6457 22.6514C18.8514 21.2743 18.0514 19.8914 17.2571 18.5143C18.0514 17.1371 18.8514 15.7543 19.6457 14.3771C21.1943 14.3771 22.7429 14.3771 24.2914 14.3771C24.3143 14.3771 24.3371 14.3771 24.36 14.3771C25.0343 15.5429 25.7086 16.7086 26.3771 17.8743C26.3714 17.8914 26.3657 17.9086 26.36 17.9257ZM16.8286 26.5771C16.8343 26.4114 16.2971 26.6057 16.2457 26.6171C15.5257 26.7486 14.8 26.7886 14.0686 26.8C13.4343 26.8057 12.8 26.7543 12.1714 26.6629C11.8914 26.6229 11.6114 26.5657 11.3314 26.5086C11.3086 26.5029 11.3086 26.5314 11.3086 26.56C11.2971 26.5543 11.28 26.5543 11.2686 26.5486C11.04 26.1486 10.8057 25.7486 10.5771 25.3486C10.1486 24.6 9.71429 23.8571 9.28572 23.1086C10.08 21.7314 10.88 20.3486 11.6743 18.9714C13.2457 18.9714 14.8171 18.9714 16.3886 18.9714C17.1943 20.3714 18 21.7657 18.8114 23.1657C18.3886 23.8914 17.9714 24.6229 17.5486 25.3486C17.3143 25.7543 17.08 26.1543 16.8514 26.56C16.8514 26.56 16.8514 26.5657 16.8457 26.5657C16.84 26.5714 16.8343 26.5771 16.8286 26.5771ZM4.50286 22.5657C4.46286 22.4171 4.12571 22.1143 4.05714 22.0343C3.96 21.92 3.86857 21.8 3.78286 21.6857C3.66857 21.5314 3.55429 21.3714 3.44 21.2057C3.43429 21.1943 3.42857 21.1829 3.41714 21.1714C2.70286 20.1143 2.14857 18.9371 1.77143 17.6857C1.95429 17.3657 2.14286 17.0457 2.32571 16.7257C2.77714 15.9429 3.22857 15.16 3.68571 14.3714C5.28 14.3714 6.86857 14.3714 8.46286 14.3714C9.25714 15.7486 10.0571 17.1314 10.8514 18.5086C10.0571 19.8857 9.25714 21.2686 8.46286 22.6457C7.60571 22.6457 6.74857 22.6457 5.89143 22.6457C5.45143 22.6457 5.01714 22.6457 4.57714 22.6457C4.55429 22.6229 4.52571 22.5943 4.50286 22.5657ZM4.74286 5.17714C5.08 5.17714 5.41714 5.17714 5.75429 5.17714C6.65714 5.17714 7.56571 5.17714 8.46857 5.17714C9.26286 6.55429 10.0629 7.93714 10.8571 9.31429C10.0629 10.6914 9.26286 12.0743 8.46857 13.4514C6.87429 13.4514 5.28571 13.4514 3.69143 13.4514C3.26286 12.7086 2.83429 11.9657 2.40571 11.2229C2.20571 10.88 2.01143 10.5371 1.81143 10.1943C2.39429 8.29714 3.41143 6.58857 4.74286 5.17714ZM14.1029 1.13143C15.0857 1.13143 16.04 1.24571 16.96 1.45143C17.1543 1.79429 17.3543 2.13143 17.5486 2.47429C17.9714 3.2 18.3886 3.93143 18.8114 4.65714C18.0057 6.05714 17.2 7.45143 16.3886 8.85143C14.8171 8.85143 13.2457 8.85143 11.6743 8.85143C10.88 7.47429 10.08 6.09143 9.28572 4.71429C9.71429 3.96571 10.1486 3.22286 10.5771 2.47429C10.7714 2.14286 10.96 1.80571 11.1543 1.47429C12.1029 1.25143 13.0914 1.13143 14.1029 1.13143ZM26.2514 9.75429C26.2571 9.86857 26.28 9.93143 26.3143 9.94286C26.3257 9.97143 26.3314 9.99429 26.3429 10.0229C26.1314 10.3886 25.92 10.7486 25.7143 11.1143C25.28 11.8686 24.8457 12.6229 24.4057 13.3771C24.3886 13.4057 24.3771 13.4286 24.36 13.4571C22.7886 13.4571 21.2171 13.4571 19.6457 13.4571C18.8514 12.08 18.0514 10.6971 17.2571 9.32C18.0514 7.94286 18.8514 6.56 19.6457 5.18286C20.5543 5.18286 21.4686 5.18286 22.3771 5.18286C22.7429 5.18286 23.1029 5.18286 23.4686 5.18286C24.6914 6.47429 25.6457 8.02857 26.2514 9.75429Z" fill="#D1BBBD" />
-                        </g>
-                        <defs>
-                            <clipPath id="clip0_133_89">
-                                <rect width="28" height="28" fill="white" />
-                            </clipPath>
-                        </defs>
+        <>
+            <div className={styles.profileContainer}>
+                <div className={styles.logoContainer}>
+                    <Link className={styles.navItem} to="/">
+                        <img
+                            className={styles.logoImg}
+                            src={logo}
+                            alt="logo"
+                        />
+                    </Link>
+                </div>
+
+                <div className={styles.headerProfileContainer}>
+                    <div className={styles.coinsContainer}>
+                        <p className={styles.coins}>
+                            {formatCoins(user.coins)}
+                        </p>
+                        <img
+                            src={ballsPic}
+                            alt="balls coin"
+                            width={28}
+                            height={28}
+                        />
+                    </div>
+
+                    <div className={styles.profilePicContainer}>
+                        <img
+                            className={styles.profileImg}
+                            src={profilePic}
+                            alt="profile pic"
+                        />
+                    </div>
+
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="35"
+                        height="35"
+                        viewBox="0 0 30 30"
+                        fill="none"
+                        onClick={() => setShowModal(true)}
+                        className={styles.menuIcon}
+                        style={{ cursor: 'pointer' }}
+                    >
+                        <path
+                            d="M3.75 22.5V20H26.25V22.5H3.75ZM3.75 16.25V13.75H26.25V16.25H3.75ZM3.75 10V7.5H26.25V10H3.75Z"
+                            fill="white"
+                        />
                     </svg>
                 </div>
-                <div className={styles.profilePicContainer} >
-                    <img className={styles.profileImg} src={profilePic} alt='profile pic' />
-                </div>
-                <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" viewBox="0 0 30 30" fill="none">
-                    <path d="M3.75 22.5V20H26.25V22.5H3.75ZM3.75 16.25V13.75H26.25V16.25H3.75ZM3.75 10V7.5H26.25V10H3.75Z" fill="white" />
-                </svg>
             </div>
-        </div>
+
+            {showModal && (
+                <ProfileModal
+                    user={user}
+                    onClose={() => setShowModal(false)}
+                />
+            )}
+        </>
     );
 }
 

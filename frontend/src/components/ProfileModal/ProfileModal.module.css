@@ -1,0 +1,121 @@
+/* ProfileModal.module.css */
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.539);
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    z-index: 10000;
+}
+
+.container {
+    width: 100%;
+    max-width: 500px;
+    height: 80vh;
+    background: #261329;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    padding: 28px 16px 16px;
+    animation: slideUp 0.3s ease forwards;
+    position: relative;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+.closeBtn {
+    position: absolute;
+    top: 6px;
+    right: 14px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #fff;
+    cursor: pointer;
+}
+
+.tabList {
+    display: flex;
+    border-bottom: 1px solid #3a3a4d;
+    margin-bottom: 12px;
+}
+
+.tabTrigger {
+    flex: 1;
+    padding: 8px 0;
+    background: none;
+    border: none;
+    color: #aaa;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: "Montserrat", sans-serif;
+}
+
+.active {
+    color: #fff;
+    border-bottom: 2px solid #f05d5d;
+    font-weight: 600;
+}
+
+.tabContent {
+    overflow-y: auto;
+    height: calc(80vh - 100px);
+    color: #fff;
+}
+
+.profileSection {
+    text-align: center;
+}
+
+.avatar {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin: 20px auto 8px;
+    box-shadow: 0 0 10px 12px rgba(226, 17, 55, 0.4);
+    border: 2px solid red;
+}
+
+.username {
+    margin: 0;
+}
+
+.joined {
+    color: #aaa;
+    margin-bottom: 16px;
+    font-weight: 600;
+}
+
+.stats {
+    display: flex;
+    justify-content: space-around;
+}
+
+.statContainer {
+    background: #220e25;
+    width: 30%;
+    height: 60px;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.statLabel {
+    display: block;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.statValue {
+    font-size: 16px;
+    font-weight: bold;
+}

@@ -36,4 +36,21 @@ async function getUserByTelegramId(req, res) {
     }
 }
 
-module.exports = { createUser, getAllUsers, getUserByTelegramId };
+async function getProfile(req, res) {
+    const profile = await userService.getProfile(req.params.id);
+    res.json(profile);
+};
+
+async function patchAvatar(req, res) {
+    const fileUrl = await uploadService.handleUpload(req.file);
+    const updated = await userService.updateAvatar(req.params.id, fileUrl);
+    res.json(updated);
+};
+
+module.exports = {
+    createUser,
+    getAllUsers,
+    getUserByTelegramId,
+    getProfile,
+    patchAvatar,
+};
