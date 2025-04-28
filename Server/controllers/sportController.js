@@ -6,9 +6,9 @@ async function listSports(req, res) {
         const { group } = req.query;
         let sports;
         if (group) {
-            sports = await req.app.get('models').Sport.findAll({ where: { group } });
+            sports = await Sport.findAll({ where: { group } });
         } else {
-            sports = await req.app.get('models').Sport.findAll();
+            sports = await Sport.findAll();
         }
         res.json(sports);
     } catch (error) {
