@@ -23,43 +23,44 @@
    Toastify Notification Styles
    ============================ */
 
-   .Toastify__toast--success {
-    background: rgba(0, 60, 0, 0.7); /* Dark translucent green */
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(29, 229, 29, 0.8); /* Neon green border */
-    box-shadow: 0 0 12px 6px rgba(6, 246, 30, 0.3); /* Green glow */
-    border-radius: 12px;
-    color: #ffffff;
-    font-family: 'Poppins', sans-serif;
-    font-size: 15px;
-    font-weight: 500;
-    padding: 1rem 1.5rem;
-  }
-  
-  .Toastify__toast {
-    display: flex;
-    align-items: center;
-    background: rgba(37, 19, 40, 0.7); /* Base background for all toasts */
-    border-radius: 12px;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    color: #e0d7f5;
-    box-shadow: 0 0 12px 6px rgba(98, 0, 234, 0.3);
-    font-family: 'Poppins', sans-serif;
-    font-size: 15px;
-    padding: 1rem 1.5rem;
-  }
-  
-  .Toastify__toast-icon {
-    margin-right: 0.75rem;
-    font-size: 20px;
-    color: #39f368; /* Bright green icon for success */
-  }
-  
-  .Toastify__close-button {
-    color: #ffffff;
-    opacity: 0.7;
-    font-size: 18px;
-  }
-  
+.Toastify__toast--success {
+  background: rgba(0, 60, 0, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(29, 229, 29, 0.8);
+  box-shadow: 0 0 12px 6px rgba(6, 246, 30, 0.3);
+  border-radius: 8px;
+  color: #ffffff;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 1rem 1.5rem;
+}
+
+.Toastify__toast {
+  width: 65vw;
+  display: flex;
+  align-items: center;
+  background: rgba(37, 19, 40, 0.7);
+  border-radius: 8px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #e0d7f5;
+  box-shadow: 0 0 12px 6px rgba(98, 0, 234, 0.3);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 15px;
+  padding: 1rem 1.5rem;
+  margin-top: 10px;
+}
+
+.Toastify__toast-icon {
+  margin-right: 0.75rem;
+  font-size: 20px;
+  color: #39f368;
+}
+
+.Toastify__close-button {
+  color: #ffffff;
+  opacity: 0.7;
+  font-size: 18px;
+}
