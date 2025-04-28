@@ -22,7 +22,7 @@ const inventoryRouter = require('./routes/inventory');
 const cardsRouter = require('./routes/cards');
 const auctionsRouter = require('./routes/auctions');
 const marketplaceRouter = require('./routes/marketplace');
-const sportsRouter = require('./routes/sports');
+const sportsRouter = require('./routes/sport');
 const leaguesRouter = require('./routes/leagues');
 const adminRouter = require('./routes/admin');
 

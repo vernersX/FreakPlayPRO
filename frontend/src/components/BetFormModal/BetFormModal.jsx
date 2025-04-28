@@ -1,5 +1,7 @@
 // src/components/BetFormModal/BetFormModal.jsx
 import React, { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import styles from './BetFormModal.module.css';
 import { API_BASE_URL } from '../../config';
@@ -158,11 +160,17 @@ export default function BetFormModal({ game, telegramId, onClose, onBetSuccess, 
                 }),
             });
             const data = await res.json();
-            if (!res.ok) setError(data.error || 'Error placing bet');
-            else onBetSuccess(data.bet);
+            if (!res.ok) {
+                setError(data.error || 'Error placing bet');
+                toast.error(data.error || 'Error placing bet');
+            } else {
+                toast.success('Bet placed successfully!');
+                onBetSuccess(data.bet);
+            }
         } catch (err) {
             console.error(err);
             setError('Error placing bet');
+            toast.error('Network error. Please try again.');
         }
     }
 

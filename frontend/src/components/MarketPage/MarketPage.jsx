@@ -2,6 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import { API_BASE_URL } from '../../config';
 import styles from './MarketPage.module.css';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function MarketPage({ telegramId, onPurchase }) {
     const [items, setItems] = useState([]);
@@ -41,12 +43,14 @@ function MarketPage({ telegramId, onPurchase }) {
                     setPurchaseStatus(`Error: ${data.error}`);
                 } else {
                     setPurchaseStatus("Purchase successful!");
+                    toast.success("Purchase successful!");
                     if (onPurchase) onPurchase();
                 }
             })
             .catch((err) => {
                 console.error("Error purchasing item:", err);
                 setPurchaseStatus("Error processing purchase.");
+                toast.error("Error processing purchase.");
             });
     }
 

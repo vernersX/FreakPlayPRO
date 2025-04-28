@@ -12,6 +12,8 @@ import SportsDetailPage from './components/SportsDetailPage/SportsDetailPage';
 import MarketPage from './components/MarketPage/MarketPage';
 import GamesPage from './components/GamesPage/GamesPage';
 import './App.css';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   const profileRef = useRef(null);
@@ -42,6 +44,16 @@ function App() {
             <Route path="/market" element={<MarketPage onPurchase={refetchUserCoins} telegramId={TEST_TELEGRAM_ID} />} />
           </Routes>
           <NavMenu />
+          {/* Toast container for action-completed notifications */}
+          <ToastContainer
+            position="top-right"
+            autoClose={7000}
+            hideProgressBar={false}
+            newestOnTop
+            closeOnClick
+            pauseOnHover
+            draggable
+          />
         </div>
       </div>
     </Router>
