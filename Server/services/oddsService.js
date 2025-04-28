@@ -1,3 +1,5 @@
+// Server/services/oddsService.js
+
 const axios = require('axios');
 const { models } = require('../db/init');
 const { Op } = require('sequelize');
@@ -13,7 +15,7 @@ function parseOdds(matchFromApi) {
     const firstBookmaker = matchFromApi.bookmakers[0];
     const h2hMarket = firstBookmaker.markets.find(m => m.key === 'h2h');
     if (h2hMarket?.outcomes) {
-      h2hMarket.outcomes.forEach((outcome) => {
+      h2hMarket.outcomes.forEach(outcome => {
         if (outcome.name === matchFromApi.home_team) {
           homeOdds = outcome.price;
         } else if (outcome.name === matchFromApi.away_team) {
@@ -29,24 +31,30 @@ function parseOdds(matchFromApi) {
 
 async function fetchAllOdds() {
   try {
-    // Retrieve only active sports in the groups we care about:
-    const validGroups = ["Soccer", "Basketball", "Ice Hockey", "Mixed Martial Arts"];
+    // 1) Get active sports in our supported groups
+    const validGroups = [
+      "Soccer",
+      "Basketball",
+      "Ice Hockey",
+      "Mixed Martial Arts"
+    ];
     const sports = await Sport.findAll({
       where: {
         active: true,
         group: { [Op.in]: validGroups }
       }
     });
-    // Build a mapping to include title/description and get sport keys.
+
+    // 2) Build mapping and list of sportKeys
     const sportMapping = {};
-    const sportKeys = sports.map(sport => {
-      sportMapping[sport.key] = sport;
-      return sport.key;
+    const sportKeys = sports.map(s => {
+      sportMapping[s.key] = s;
+      return s.key;
     });
 
-    // Proceed with making API calls for each sport (or use a consolidated call if supported)
-    // (If you still need to make individual calls, you can use Promise.all as before.)
-    const fetchPromises = sportKeys.map(sportKey => {
+    // 3) Fetch odds for each sport sequentially
+    const allResults = [];
+    for (const sportKey of sportKeys) {
       const url = `https://api.the-odds-api.com/v4/sports/${sportKey}/odds`;
       const params = {
         apiKey: process.env.ODDS_API_KEY,
@@ -55,20 +63,22 @@ async function fetchAllOdds() {
         oddFormat: 'decimal',
         dateFormat: 'iso'
       };
-      return axios.get(url, { params })
-        .then(response => ({ sportKey, oddsData: response.data }))
-        .catch(error => {
-          console.error(`Error fetching odds for ${sportKey}: ${error.message}`);
-          return { sportKey, oddsData: [] };
-        });
-    });
 
-    const results = await Promise.all(fetchPromises);
+      try {
+        const response = await axios.get(url, { params });
+        console.log(`✅ Fetched ${response.data.length} odds for ${sportKey}`);
+        allResults.push({ sportKey, oddsData: response.data });
+      } catch (err) {
+        console.error(`⚠️ Error fetching odds for ${sportKey}: ${err.message}`);
+        allResults.push({ sportKey, oddsData: [] });
+      }
+    }
+
+    // 4) Upsert into DB
     let totalMatches = 0;
-    for (const result of results) {
-      const { sportKey, oddsData } = result;
+    for (const { sportKey, oddsData } of allResults) {
       const sport = sportMapping[sportKey];
-      const upcomingGames = oddsData.map(apiMatch => {
+      const games = oddsData.map(apiMatch => {
         const { homeOdds, awayOdds, drawOdds } = parseOdds(apiMatch);
         return {
           apiMatchId: apiMatch.id,
@@ -85,22 +95,22 @@ async function fetchAllOdds() {
           group: sport.group
         };
       });
-      totalMatches += upcomingGames.length;
-      for (const game of upcomingGames) {
+
+      totalMatches += games.length;
+      for (const game of games) {
         await Match.upsert(game);
       }
-      console.log(`Upserted ${upcomingGames.length} matches for ${sportKey}.`);
+      console.log(`🔄 Upserted ${games.length} matches for ${sportKey}`);
     }
-    console.log(`Upserted a total of ${totalMatches} matches for all selected sports.`);
-  } catch (error) {
-    console.error('Error fetching all odds:', error.message || error);
+
+    console.log(`🎉 Upserted a total of ${totalMatches} matches.`);
+  } catch (err) {
+    console.error('❌ Error fetching all odds:', err.message || err);
   }
 }
 
 function determineWinnerFromScores(scoresArray, homeTeamName, awayTeamName) {
-  if (!scoresArray || scoresArray.length < 2) {
-    return null;
-  }
+  if (!scoresArray || scoresArray.length < 2) return null;
   const home = scoresArray.find(s => s.name === homeTeamName);
   const away = scoresArray.find(s => s.name === awayTeamName);
   if (!home || !away) return null;
@@ -111,8 +121,12 @@ function determineWinnerFromScores(scoresArray, homeTeamName, awayTeamName) {
 
 async function resolveMatches() {
   try {
-    // Retrieve active sports in the groups you care about.
-    const validGroups = ["Soccer", "Basketball", "Ice Hockey", "Mixed Martial Arts"];
+    const validGroups = [
+      "Soccer",
+      "Basketball",
+      "Ice Hockey",
+      "Mixed Martial Arts"
+    ];
     const sports = await Sport.findAll({
       where: {
         active: true,
@@ -120,14 +134,14 @@ async function resolveMatches() {
       }
     });
 
-    // Iterate over each sport and fetch scores.
     for (const sport of sports) {
       const sportKey = sport.key;
       const url = `https://api.the-odds-api.com/v4/sports/${sportKey}/scores`;
       const params = {
         apiKey: process.env.ODDS_API_KEY,
-        daysFrom: 3,
+        daysFrom: 3
       };
+
       try {
         const response = await axios.get(url, { params });
         const matchScores = response.data;
@@ -135,54 +149,51 @@ async function resolveMatches() {
         for (const matchObj of matchScores) {
           if (!matchObj.completed) continue;
 
-          // Find the match in the DB by its API match ID.
-          const dbMatch = await Match.findOne({ where: { apiMatchId: matchObj.id } });
+          const dbMatch = await Match.findOne({
+            where: { apiMatchId: matchObj.id }
+          });
           if (!dbMatch) continue;
 
-          // Find pending bets on this match.
           const pendingBets = await models.Bet.findAll({
-            where: { matchId: dbMatch.id, status: 'pending' },
+            where: { matchId: dbMatch.id, status: 'pending' }
           });
           if (!pendingBets.length) continue;
 
-          // Determine the winner based on scores.
-          const winner = determineWinnerFromScores(matchObj.scores, dbMatch.homeTeam, dbMatch.awayTeam);
+          const winner = determineWinnerFromScores(
+            matchObj.scores,
+            dbMatch.homeTeam,
+            dbMatch.awayTeam
+          );
           if (!winner) continue;
 
-          // Update each pending bet:
           for (const bet of pendingBets) {
-            // fetch the single card used in this bet
             const card = await models.Card.findByPk(bet.cardId);
 
             if (bet.selection === winner) {
-              // Bet won
+              // Win
               const payout = bet.stake * bet.odds;
               bet.status = 'won';
               bet.payout = payout;
               await bet.save();
 
               if (card) {
-                // on win: increment streak, unlock, NO cooldown
                 card.winStreak = (card.winStreak || 0) + 1;
                 card.isLocked = false;
                 await card.save();
               }
 
-              // credit the user
               const user = await models.User.findByPk(bet.userId);
               if (user) {
                 user.coins += payout;
                 await user.save();
               }
-
             } else {
-              // Bet lost
+              // Loss
               bet.status = 'lost';
               bet.payout = 0;
               await bet.save();
 
               if (card) {
-                // on loss: reset streak, unlock, and set 1‑hour cooldown
                 card.winStreak = 0;
                 card.isLocked = false;
                 card.cooldownUntil = new Date(Date.now() + 1 * 60 * 60 * 1000);
@@ -191,16 +202,17 @@ async function resolveMatches() {
             }
           }
         }
-        console.log(`Resolved matches for sport: ${sportKey}`);
-      } catch (error) {
-        console.error(`Error resolving matches for sport: ${sportKey}: ${error.message}`);
+
+        console.log(`🔍 Resolved matches for ${sportKey}`);
+      } catch (err) {
+        console.error(`⚠️ Error resolving ${sportKey}: ${err.message}`);
       }
     }
-    console.log('Auto-resolve complete using The Odds API.');
-  } catch (error) {
-    console.error('Error auto-resolving matches:', error);
+
+    console.log('✅ Auto-resolve complete.');
+  } catch (err) {
+    console.error('❌ Error auto-resolving matches:', err);
   }
 }
-
 
 module.exports = { fetchAllOdds, resolveMatches };
