@@ -5,9 +5,9 @@ Heyo, sir, lets get it done!
 
 2. Multi-card bet - DONE, needs css ✅
 
-3. Make items usable - in progress ⌛️
+3. Make items usable - 🏆 Ēriks in progress
 
-4. Add ball rarity - needs more details 🔵
+4. Add ball rarity - ✅✅ DONE
 
 5. Add ball skins - on hold 🔵
 
@@ -15,9 +15,9 @@ Heyo, sir, lets get it done!
 
 7. Marketplace design - 
 
-8. Daily/weekly tasks - 
+8. Daily/weekly tasks - 🌊 Verners in progress
 
-9. User profile - 
+9. User profile - 🏆 Ēriks in progress
 
 10. Leaderboard - needs more details
 
@@ -27,7 +27,7 @@ Heyo, sir, lets get it done!
 
 13. Telegram implementation - When user upens the mini-app in telegram their profile is automatically registered. Requires projects deployment.
 
-18. Action-completed notifications - when an action has been completed (placed bet, bought item, used item...etc) a visual notification is required.
+18. Action-completed notifications - ✅✅ DONE
 
 
 Low priority tasks:
