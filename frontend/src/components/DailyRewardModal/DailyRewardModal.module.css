@@ -1,0 +1,203 @@
+/* === MODAL LAYOUT === */
+
+/* The semi-transparent background behind the sheet */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 900; /* matches BetFormModal */
+  }
+  
+  /* The main bottom sheet container */
+  .bottomSheet {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+    position: fixed;
+    top: 100px;      /* same offset as BetFormModal */
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-width: 500px;
+    background: #251328;
+    border-radius: 16px 16px 0 0;
+    z-index: 9990;   /* same as BetFormModal */
+    animation: slideUp 0.3s ease forwards;
+    box-shadow: 0 0 10px 12px rgba(226, 17, 55, 0.4);
+    overflow: hidden;
+  }
+  
+  /* Slide-up keyframe */
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+  }
+  
+  /* Header row with close button */
+  .sheetHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 1rem;
+    box-sizing: border-box;
+  }
+  
+  .titleText {
+    font-size: 24px;
+    color: #fff;
+  }
+  
+  .closeBtn {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    color: #fff;
+    cursor: pointer;
+  }
+  
+  /* Body of the modal */
+  .menuContainer {
+    width: 100%;
+    padding: 0 1rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+    flex: 1;
+  }
+  
+  .subText {
+    font-size: 14px;
+    color: #ddd;
+    margin: 8px 0 4px;
+  }
+  
+  .completedText {
+    font-size: 16px;
+    color: #fff;
+    margin-bottom: 16px;
+  }
+  
+  
+  /* === PROGRESSION GRID === */
+  .progressWrapper {
+    display: grid;
+    grid-template-columns: 32px 16px 1fr;
+    column-gap: 24px;
+    height: 300px;   /* leaves room for the button below */
+    width: 100%;
+    position: relative;
+    margin: 16px 0;
+  }
+  
+  /* Left: Day numbers 0–7 */
+  .numbersColumn {
+    grid-column: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+  }
+  .numberLabel {
+    font-size: 14px;
+    color: #fff;
+    line-height: 1;
+  }
+  
+  /* Middle: the bar and marker */
+  .barColumn {
+    grid-column: 2;
+    position: relative;
+    overflow: visible;       /* allow the marker to show outside the track */
+  }
+  .progressBarTrack {
+    position: absolute;
+    top: 0; bottom: 0; left: 0;
+    width: 8px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 4px;
+    /* remove overflow:hidden so the avatar isn’t clipped */
+    overflow: visible;
+  }
+  .progressBarFill {
+    position: absolute;
+    top: 0;       /* fill from the top down */
+    left: 0;
+    width: 100%;
+    height: var(--fill-percent); /* set via inline style: height:`${(day/7)*100}%` */
+    background: linear-gradient(to bottom, #ff7f7f, #ff3344);
+    transition: height 0.4s ease;
+    min-height: 4px;  /* a sliver even at 0% */
+  }
+/* your little round avatar “pin” */
+.avatarMarker {
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    background: #1e1e1e;
+    box-shadow: 0 0 6px rgba(0,0,0,0.4);
+    z-index: 2;           /* above the fill */
+    object-fit: cover;
+  }
+  
+  /* Right: Reward icons + labels */
+  .labelsColumn {
+    grid-column: 3;
+    position: relative;
+    height: 100%;
+  }
+  .labelItem {
+    position: absolute;
+    left: 0;
+    display: flex;
+    align-items: center;
+    transform: translateY(-50%);
+  }
+  .rewardIcon {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    border-radius: 8px;
+    margin-right: 8px;
+  }
+  .stepLabel {
+    font-size: 14px;
+    color: #fff;
+    white-space: nowrap;
+  }
+  
+  /* === CLAIM BUTTON === */
+  .cnfrmBtn {
+    background:
+      /* top layer (solid interior) */
+      linear-gradient(#ff3344, #ff3344) padding-box,
+      /* bottom layer (gradient border) */
+      linear-gradient(to bottom right, #ff7f7f, #7e2a36) border-box;
+    background-clip: padding-box, border-box;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(255, 51, 68, 0.5);
+    color: #fff;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 24px;       /* push below the grid */
+    padding: 0.75rem 1.5rem;
+    text-align: center;
+    transition: opacity 0.2s ease;
+    width: 100%;
+    max-width: 240px;
+  }
+  .cnfrmBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  

@@ -9,12 +9,16 @@ import weeklyIcon from '../../imgs/win-cup-icon.png'
 import aiPic from '../../imgs/Live AI frame (1).png'
 import winners from '../../imgs/winners.png'
 import { Link } from 'react-router-dom';
+import DailyRewardModal from '../DailyRewardModal/DailyRewardModal';
+
 
 function HomePage({ onBetSuccess, telegramId }) {
     const [games, setGames] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeSport, setActiveSport] = useState('');
+    const [showDailyReward, setShowDailyReward] = useState(false);
     const [selectedTask, setSelectedTask] = useState(null);
+
 
     const tasksRef = useRef(null);
 
@@ -64,6 +68,14 @@ function HomePage({ onBetSuccess, telegramId }) {
             });
     }, [activeSport]);
 
+    //For daily tasks
+    function handleSelectTask(task) {
+        setSelectedTask(task);
+        if (task === 'daily') {
+            setShowDailyReward(true);
+        }
+    }
+
     function handleFilter(sport) {
         setActiveSport(sport);
     }
@@ -83,11 +95,18 @@ function HomePage({ onBetSuccess, telegramId }) {
                     <img src={friendsIcon} alt='friends icon' />
                     Invite friends
                 </div>
-                <div className={`${styles.taskItem} ${selectedTask === 'daily' ? styles.selected : ''
-                    }`} onClick={() => handleSelectTask('daily')}>
-                    <img src={dailyIcon} alt='friends icon' />
+                <div
+                    className={`${styles.taskItem} ${selectedTask === 'daily' ? styles.selected : ''}`}
+                    onClick={() => handleSelectTask('daily')}
+                >
+                    <img src={dailyIcon} alt='daily icon' />
                     Daily tasks 0/5
                 </div>
+
+                {/* Modal for daily reward */}
+                {showDailyReward && (
+                    <DailyRewardModal telegramId={telegramId} onClose={() => setShowDailyReward(false)} />
+                )}
                 <div className={`${styles.taskItem} ${selectedTask === 'weekly' ? styles.selected : ''
                     }`} onClick={() => handleSelectTask('weekly')}>
                     <img src={weeklyIcon} alt='friends icon' />

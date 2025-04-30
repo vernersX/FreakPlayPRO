@@ -25,6 +25,7 @@ const marketplaceRouter = require('./routes/marketplace');
 const sportsRouter = require('./routes/sport');
 const leaguesRouter = require('./routes/leagues');
 const adminRouter = require('./routes/admin');
+const dailyRewardRoutes = require('./routes/dailyReward');
 
 const app = express();
 
@@ -45,6 +46,7 @@ app.use('/api/marketplace', marketplaceRouter);
 app.use('/api/sports', sportsRouter);
 app.use('/api/leagues', leaguesRouter);
 app.use('/api/admin', adminRouter);
+app.use('/api/daily-reward', dailyRewardRoutes);
 
 // ─── Static React Build ──────────────────────────────────────────────────────
 // Serve frontend/build as static assets
