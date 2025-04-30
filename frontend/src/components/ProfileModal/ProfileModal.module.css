@@ -7,6 +7,22 @@
     justify-content: center;
     align-items: flex-end;
     z-index: 10000;
+    opacity: 1;
+}
+
+.overlayClosing {
+    /* fade out */
+    animation: fadeOutOverlay 300ms ease forwards;
+}
+
+@keyframes fadeOutOverlay {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
 }
 
 .container {
@@ -29,6 +45,20 @@
     to {
         transform: translateY(0);
     }
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(0);
+    }
+
+    to {
+        transform: translateY(100%);
+    }
+}
+
+.container.closing {
+    animation: slideDown 0.3s ease forwards;
 }
 
 .closeBtn {
@@ -118,4 +148,11 @@
 .statValue {
     font-size: 16px;
     font-weight: bold;
+}
+
+.divider {
+    border: 0;
+    border-top: 1px solid #f05d5d;
+    height: 0;
+    margin: 16px 0;
 }

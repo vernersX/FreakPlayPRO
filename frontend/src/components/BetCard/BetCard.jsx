@@ -41,16 +41,24 @@ function BetCard({ bet }) {
                 <p><strong>Status:</strong> {bet.status}</p>
             </div> */}
             <div className={styles.cardInfo}>
-                {bet.Card ? (
+                {Array.isArray(bet.Cards) && bet.Cards.length > 0 ? (
                     <div className={styles.cardDetails}>
-                        <img
-                            src={bet.Card.imageURL}
-                            alt={`${bet.Card.rarity} card`}
-                            className={styles.cardImage}
-                        />
+                        {bet.Cards.map(card => (
+                            <img
+                                key={card.id}
+                                src={card.imageURL}
+                                alt={`${card.rarity} card`}
+                                className={styles.cardImage}
+                            />
+                        ))}
                     </div>
                 ) : (
-                    <p><strong>Card Used:</strong> #{bet.cardId}</p>
+                    <p>
+                        <strong>Card Used:</strong>{' '}
+                        {Array.isArray(bet.cardIds)
+                            ? bet.cardIds.map(id => `#${id}`).join(', ')
+                            : `#${bet.cardId}`}
+                    </p>
                 )}
             </div>
             {isFinished && <div className={bet.status === 'won' ? styles.statusWon : styles.statusLost}>

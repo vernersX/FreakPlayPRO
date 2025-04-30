@@ -1,45 +1,97 @@
-// client/src/components/MyBetsPage/MyBetsPage.jsx
-import React, { useEffect, useState } from 'react';
-import { API_BASE_URL } from '../../config';
+// frontend/src/components/BetsPage/BetsPage.jsx
 
-function MyBetsPage({ telegramId }) {
-    const [bets, setBets] = useState([]);
+import React, { useEffect, useState } from 'react';
+import { API_BASE_URL } from '../../config';                 // your base URL :contentReference[oaicite:0]{index=0}
+import BetCard from '../BetCard/BetCard';                   // reuse your BetCard component :contentReference[oaicite:1]{index=1}
+
+export default function BetsPage({ telegramId }) {
+    const [pendingBets, setPendingBets] = useState([]);
+    const [historyBets, setHistoryBets] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        async function fetchMyBets() {
+        if (!telegramId) return;
+
+        async function fetchBets() {
+            setLoading(true);
             try {
-                const res = await fetch(`${API_BASE_URL}/api/bets/my?telegramId=${telegramId}`);
-                const data = await res.json();
-                setBets(data);
-                setLoading(false);
+                const [pendingRes, historyRes] = await Promise.all([
+                    fetch(
+                        `${API_BASE_URL}/api/bets/my?telegramId=${encodeURIComponent(
+                            telegramId
+                        )}`
+                    ),
+                    fetch(
+                        `${API_BASE_URL}/api/bets/history?telegramId=${encodeURIComponent(
+                            telegramId
+                        )}`
+                    )
+                ]);
+
+                const [pendingData, historyData] = await Promise.all([
+                    pendingRes.json(),
+                    historyRes.json()
+                ]);
+
+                setPendingBets(pendingData);
+                setHistoryBets(historyData);
             } catch (err) {
-                console.error('Error fetching my bets:', err);
+                console.error('Error fetching bets:', err);
+            } finally {
                 setLoading(false);
             }
         }
-        if (telegramId) {
-            fetchMyBets();
-        }
+
+        fetchBets();
     }, [telegramId]);
 
-    if (loading) return <div>Loading your pending bets...</div>;
-    if (!bets.length) return <div>You have no active bets.</div>;
+    if (loading) {
+        return <div>Loading your bets...</div>;
+    }
+
+    // No bets at all
+    if (pendingBets.length === 0 && historyBets.length === 0) {
+        return <div>You have no bets yet.</div>;
+    }
 
     return (
-        <div>
-            <h2>My Active Bets</h2>
-            {bets.map((bet) => (
-                <div key={bet.id} style={{ border: '1px solid #ccc', margin: '8px', padding: '8px' }}>
-                    <p>Bet ID: {bet.id}</p>
-                    <p>Match: {bet.Match ? `${bet.Match.homeTeam} vs ${bet.Match.awayTeam}` : bet.matchId}</p>
-                    <p>Selection: {bet.selection}</p>
-                    <p>Stake: {bet.stake}</p>
-                    <p>Status: {bet.status}</p>
-                </div>
-            ))}
+        <div style={{ padding: '16px' }}>
+            {/* Active Bets */}
+            {pendingBets.length > 0 && (
+                <>
+                    <h2>My Active Bets</h2>
+                    <div
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '12px',
+                            marginBottom: '24px'
+                        }}
+                    >
+                        {pendingBets.map(bet => (
+                            <BetCard key={bet.id} bet={bet} />
+                        ))}
+                    </div>
+                </>
+            )}
+
+            {/* Past Bets */}
+            {historyBets.length > 0 && (
+                <>
+                    <h2>Past Bets</h2>
+                    <div
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '12px'
+                        }}
+                    >
+                        {historyBets.map(bet => (
+                            <BetCard key={bet.id} bet={bet} />
+                        ))}
+                    </div>
+                </>
+            )}
         </div>
     );
 }
-
-export default MyBetsPage;

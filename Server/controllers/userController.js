@@ -1,5 +1,7 @@
 const { models } = require('../db/init');
-const { User } = models;
+const { Op } = require('sequelize');
+
+const { User, Card, Bet, Match } = models;
 
 async function createUser(req, res) {
     try {
@@ -29,7 +31,40 @@ async function getUserByTelegramId(req, res) {
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
-        res.json(user);
+
+        // Turn into a plain object so we can add our counts
+        const userData = user.toJSON();
+
+        // 1) Total cards owned
+        const cardsCount = await Card.count({
+            where: { userId: user.id }
+        });
+
+        // 2) Total distinct matches they've bet on
+        const matchesCount = await Bet.count({
+            where: { userId: user.id },
+            distinct: true,
+            col: 'matchId'
+        });
+
+        // 3) Live matches (started but no outcome yet)
+        const liveMatchesCount = await Match.count({
+            where: {
+                commenceTime: { [Op.lte]: new Date() },
+                outcome: null
+            }
+        });
+
+        // 4) Hard-coded ranking
+        const ranking = 1;
+
+        res.json({
+            ...userData,
+            cardsCount,
+            matchesCount,
+            liveMatchesCount,
+            ranking
+        });
     } catch (error) {
         console.error('Error fetching user:', error);
         res.status(500).json({ error: 'Internal Server Error' });
@@ -39,13 +74,13 @@ async function getUserByTelegramId(req, res) {
 async function getProfile(req, res) {
     const profile = await userService.getProfile(req.params.id);
     res.json(profile);
-};
+}
 
 async function patchAvatar(req, res) {
     const fileUrl = await uploadService.handleUpload(req.file);
     const updated = await userService.updateAvatar(req.params.id, fileUrl);
     res.json(updated);
-};
+}
 
 module.exports = {
     createUser,

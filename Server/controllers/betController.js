@@ -103,17 +103,26 @@ async function getMyBets(req, res) {
         const user = await User.findOne({ where: { telegramId } });
         if (!user) return res.status(404).json({ error: 'User not found' });
 
-        const pendingBets = await Bet.findAll({
-            where: {
-                userId: user.id,          // ← filter by numeric id
-                status: 'pending'
-            },
-            include: [Match, Card]
+        // 1) fetch bets with match info only
+        const rawBets = await Bet.findAll({
+            where: { userId: user.id, status: 'pending' },
+            include: [Match],       // ← drop Card here
         });
-        res.json(pendingBets);
 
-    } catch (error) {
-        console.error('Error fetching my bets:', error);
+        // 2) for each bet, load its cards
+        const betsWithCards = await Promise.all(
+            rawBets.map(async bet => {
+                const betJson = bet.toJSON();
+                const cards = await Card.findAll({
+                    where: { id: betJson.cardIds }
+                });
+                return { ...betJson, Cards: cards };
+            })
+        );
+
+        res.json(betsWithCards);
+    } catch (err) {
+        console.error(err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 }
@@ -122,17 +131,34 @@ async function getBetHistory(req, res) {
     try {
         const { telegramId } = req.query;
         const user = await User.findOne({ where: { telegramId } });
-        if (!user) return res.status(404).json({ error: 'User not found' });
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
 
-        const finishedBets = await Bet.findAll({
+        // 1) Fetch all completed bets (won or lost) with match info only
+        const rawHistory = await Bet.findAll({
             where: {
-                userId: user.id,          // ← filter by numeric id
+                userId: user.id,
                 status: { [Op.in]: ['won', 'lost'] }
             },
-            include: [Match, Card]
+            include: [Match]
         });
-        res.json(finishedBets);
 
+        // 2) For each bet, load all Cards whose IDs are in bet.cardIds
+        const historyWithCards = await Promise.all(
+            rawHistory.map(async bet => {
+                const betJson = bet.toJSON();
+                const cardsUsed = await Card.findAll({
+                    where: { id: betJson.cardIds }
+                });
+                return {
+                    ...betJson,
+                    Cards: cardsUsed
+                };
+            })
+        );
+
+        res.json(historyWithCards);
     } catch (error) {
         console.error('Error fetching bet history:', error);
         res.status(500).json({ error: 'Internal Server Error' });
@@ -143,21 +169,37 @@ async function getBetForMatch(req, res) {
     try {
         const { telegramId, matchId } = req.query;
         const user = await User.findOne({ where: { telegramId } });
-        if (!user) return res.json(null);
+        if (!user) {
+            // No user → no bet
+            return res.json(null);
+        }
 
-        const existingBet = await Bet.findOne({
+        // 1) Find any pending bet on this match for the user
+        const rawBet = await Bet.findOne({
             where: {
-                userId: user.id,          // ← filter by numeric id
+                userId: user.id,
                 matchId,
                 status: 'pending'
             },
-            include: [Card]
+            include: [Match]
+        });
+        if (!rawBet) {
+            return res.json(null);
+        }
+
+        // 2) Load all Cards from the bet.cardIds array
+        const betJson = rawBet.toJSON();
+        const cardsUsed = await Card.findAll({
+            where: { id: betJson.cardIds }
         });
 
-        return res.json(existingBet || null);
+        res.json({
+            ...betJson,
+            Cards: cardsUsed
+        });
     } catch (error) {
         console.error('Error fetching bet for match:', error);
-        return res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 }
 
