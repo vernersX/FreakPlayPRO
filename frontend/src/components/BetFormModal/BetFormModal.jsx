@@ -69,12 +69,27 @@ export default function BetFormModal({ game, telegramId, onClose, onBetSuccess, 
         setShowConfirmation(false);
     }
 
+    function isOnCooldown(card) {
+        return (
+            card.cooldownUntil &&
+            new Date(card.cooldownUntil).getTime() > Date.now()
+        );
+    }
+
     // toggle card in selection array (max 3)
-    function handleCardSelection(id) {
-        setSelected(arr => {
-            if (arr.includes(id)) return arr.filter(x => x !== id);
-            if (arr.length < 3) return [...arr, id];
-            return arr;
+    function handleCardSelection(cardId) {
+        const card = cards.find(c => c.id === cardId);
+        // if the card is cooling down, bail out
+        if (!card || isOnCooldown(card)) return;
+
+        setSelected(ids => {
+            if (ids.includes(cardId)) {
+                return ids.filter(id => id !== cardId);
+            }
+            if (ids.length < 3) {
+                return [...ids, cardId];
+            }
+            return ids;
         });
     }
 

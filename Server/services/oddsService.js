@@ -128,10 +128,7 @@ async function resolveMatches() {
       "Mixed Martial Arts"
     ];
     const sports = await Sport.findAll({
-      where: {
-        active: true,
-        group: { [Op.in]: validGroups }
-      }
+      where: { active: true, group: { [Op.in]: validGroups } }
     });
 
     for (const sport of sports) {
@@ -149,16 +146,10 @@ async function resolveMatches() {
         for (const matchObj of matchScores) {
           if (!matchObj.completed) continue;
 
-          const dbMatch = await Match.findOne({
-            where: { apiMatchId: matchObj.id }
-          });
+          const dbMatch = await Match.findOne({ where: { apiMatchId: matchObj.id } });
           if (!dbMatch) continue;
 
-          const pendingBets = await models.Bet.findAll({
-            where: { matchId: dbMatch.id, status: 'pending' }
-          });
-          if (!pendingBets.length) continue;
-
+          // Determine winner once per match
           const winner = determineWinnerFromScores(
             matchObj.scores,
             dbMatch.homeTeam,
@@ -166,37 +157,63 @@ async function resolveMatches() {
           );
           if (!winner) continue;
 
-          for (const bet of pendingBets) {
-            const card = await models.Card.findByPk(bet.cardId);
+          // Fetch all bets for this match, including already resolved
+          const bets = await models.Bet.findAll({
+            where: {
+              matchId: dbMatch.id,
+              status: { [Op.in]: ['pending', 'won', 'lost'] }
+            }
+          });
+          if (!bets.length) continue;
 
-            if (bet.selection === winner) {
-              // Win
-              const payout = bet.stake * bet.odds;
-              bet.status = 'won';
-              bet.payout = payout;
+          for (const bet of bets) {
+            let shouldProcessCards = false;
+
+            // Handle pending bets: update status, payout, user coins
+            if (bet.status === 'pending') {
+              const isWin = (bet.selection === winner);
+              if (isWin) {
+                bet.status = 'won';
+                bet.payout = bet.stake * bet.odds;
+                // Award coins to user
+                const user = await models.User.findByPk(bet.userId);
+                if (user) {
+                  user.coins += bet.payout;
+                  await user.save();
+                }
+              } else {
+                bet.status = 'lost';
+                bet.payout = 0;
+              }
               await bet.save();
-
-              if (card) {
-                card.winStreak = (card.winStreak || 0) + 1;
-                card.isLocked = false;
-                await card.save();
-              }
-
-              const user = await models.User.findByPk(bet.userId);
-              if (user) {
-                user.coins += payout;
-                await user.save();
-              }
+              shouldProcessCards = true;
             } else {
-              // Loss
-              bet.status = 'lost';
-              bet.payout = 0;
-              await bet.save();
+              // Already resolved: check for any locked cards to process
+              // Only re-process if cards are still marked locked
+              const lockedCard = await models.Card.findOne({
+                where: { id: { [Op.in]: bet.cardIds }, isLocked: true }
+              });
+              if (lockedCard) {
+                shouldProcessCards = true;
+              }
+            }
 
-              if (card) {
-                card.winStreak = 0;
-                card.isLocked = false;
-                card.cooldownUntil = new Date(Date.now() + 1 * 60 * 60 * 1000);
+            // Process cards if needed
+            if (shouldProcessCards) {
+              for (const cardId of bet.cardIds) {
+                const card = await models.Card.findByPk(cardId);
+                if (!card || !card.isLocked) continue;
+
+                if (bet.selection === winner) {
+                  // Win logic
+                  card.winStreak = (card.winStreak || 0) + 1;
+                  card.isLocked = false;
+                } else {
+                  // Loss logic
+                  card.winStreak = 0;
+                  card.isLocked = false;
+                  card.cooldownUntil = new Date(Date.now() + 1 * 60 * 60 * 1000);
+                }
                 await card.save();
               }
             }
@@ -214,5 +231,7 @@ async function resolveMatches() {
     console.error('❌ Error auto-resolving matches:', err);
   }
 }
+
+
 
 module.exports = { fetchAllOdds, resolveMatches };

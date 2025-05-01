@@ -74,9 +74,10 @@ async function start() {
     await connectToDB();
     await syncModels();
 
-    // 2) Initial data pulls
+    // 2) Initial data pulls & match resolution
     await oddsService.fetchAllOdds();
     await sportService.updateAllSports();
+    await oddsService.resolveMatches();
 
     // 3) Launch Telegram bot
     telegramService.launchBot();
@@ -86,6 +87,7 @@ async function start() {
       console.log('⏱️  Running scheduled refresh…');
       await oddsService.fetchAllOdds();
       await sportService.updateAllSports();
+      await oddsService.resolveMatches();
     });
 
     // 5) Start server
