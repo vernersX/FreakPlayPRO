@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import styles from './UseItemModal.module.css';
 import { API_BASE_URL } from '../../config';
 import CardItem from '../CardItem/CardItem';
+import { toast } from 'react-toastify';
 
 const cardRequirement = {
     coin_boost: 1,
@@ -23,7 +24,10 @@ export default function UseItemModal({ telegramId, inventoryItem, onClose, onUse
         fetch(`${API_BASE_URL}/api/inventory/cards?telegramId=${telegramId}`)
             .then(r => r.json())
             .then(setCards)
-            .catch(console.error);
+            .catch(err => {
+                console.error('Error loading cards:', err);
+                toast.error('Failed to load cards.');
+            });
     }, [step, needCards, telegramId]);
 
     const toggleCard = (id) => {
@@ -52,13 +56,18 @@ export default function UseItemModal({ telegramId, inventoryItem, onClose, onUse
             });
             const data = await res.json();
             if (!res.ok) {
-                alert(data.error || 'Failed to use item');
+                toast.error(data.error || 'Failed to use item');
                 return;
             }
+            // Success notification
+            const itemLabel = inventoryItem.Item.name || inventoryItem.Item.type.replace(/_/g, ' ');
+            toast.success(`${itemLabel.charAt(0).toUpperCase() + itemLabel.slice(1)} used successfully!`);
+
             onUsed();            // let parent know to refresh
+            onClose();
         } catch (err) {
             console.error(err);
-            alert('Network error');
+            toast.error('Network error. Please try again.');
         }
     };
 

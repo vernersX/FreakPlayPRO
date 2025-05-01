@@ -27,11 +27,27 @@ async function coinBoostEffect(user, card, _invItem, metadata) {
  2)  Refill Lives  (needs a card)
 ────────────────────────────────────────────────────────────────*/
 async function refillLivesEffect(_user, card) {
-    if (!card) throw new Error('refill_lives requires a target card');
-    card.lives = card.maxLives;
+    if (!card) {
+      throw new Error('refill_lives requires a target card');
+    }
+  
+    // Fresh data
+    await card.reload();
+  
+    const now = new Date();
+  
+    // Only allow if card.cooldownUntil is in the future
+    if (!card.cooldownUntil || card.cooldownUntil <= now) {
+      throw new Error('Cannot refill: card is not on cooldown');
+    }
+  
+    // Clear the cooldown by setting it to now
+    card.cooldownUntil = now;
     await card.save();
-    console.log(`Refilled lives on card #${card.id}`);
-}
+  
+    console.log(`Cleared cooldown on card #${card.id} at ${now.toISOString()}`);
+  }
+  
 
 /*───────────────────────────────────────────────────────────────
  3)  Ball Merge – combine two same‑rarity cards listed in

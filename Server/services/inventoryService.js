@@ -57,7 +57,7 @@ async function useItem(
     let targetCard = null;
     if (targetCardId) {
         targetCard = await Card.findOne({
-            where: { id: targetCardId, userId: telegramId }
+            where: { id: targetCardId, userId: user.id }
         });
         if (!targetCard) throw new Error('Target card not found');
     }
