@@ -23,12 +23,24 @@ export default function UseItemModal({ telegramId, inventoryItem, onClose, onUse
         if (needCards === 0 || step === 'confirm') return;
         fetch(`${API_BASE_URL}/api/inventory/cards?telegramId=${telegramId}`)
             .then(r => r.json())
+            .then(rawCards => {
+                // For refill_lives, only show cards still on cooldown
+                if (inventoryItem.Item.type === 'refill_lives') {
+                    const now = new Date();
+                    return rawCards.filter(c => {
+                        if (!c.cooldownUntil) return false;
+                        const cd = new Date(c.cooldownUntil);
+                        return cd > now;
+                    });
+                }
+                return rawCards;
+            })
             .then(setCards)
             .catch(err => {
                 console.error('Error loading cards:', err);
                 toast.error('Failed to load cards.');
             });
-    }, [step, needCards, telegramId]);
+    }, [step, needCards, telegramId, inventoryItem.Item.type]);
 
     const toggleCard = (id) => {
         setSelected(prev =>
@@ -96,7 +108,14 @@ export default function UseItemModal({ telegramId, inventoryItem, onClose, onUse
                             Select {needCards} card{needCards > 1 ? 's' : ''} to apply the item
                         </p>
 
-                        <div className={styles.cardGrid}>
+                        <div
+                            className={styles.cardGrid}
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: '1fr 1fr',
+                                gap: '12px'
+                            }}
+                        >
                             {cards.map(c => (
                                 <div
                                     key={c.id}

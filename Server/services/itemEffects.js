@@ -9,18 +9,45 @@ const rarities = require('../constants/rarities');
 /*───────────────────────────────────────────────────────────────
  1)  Coin Boost   (needs a card)
 ────────────────────────────────────────────────────────────────*/
-async function coinBoostEffect(user, card, _invItem, metadata) {
-    if (!card) throw new Error('coin_boost requires a target card');
+async function coinBoostEffect(_user, card, _invItem, metadata = {}) {
+  if (!card) {
+    throw new Error('coin_boost requires a target card');
+  }
 
-    const multiplier = metadata?.boostAmount ?? 2;              // default ×2
-    const durationMs = metadata?.duration ?? 86_400_000;     // 24 h
+  // Reload to get the freshest expiry time
+  await card.reload();
 
+  const now = new Date();
+  const durationMs = metadata.duration ?? 86_400_000; // default 24h
+  const multiplier = metadata.boostAmount ?? 2;
+
+  const currentExpiresAt = card.coinBoostExpiresAt
+    ? new Date(card.coinBoostExpiresAt)
+    : null;
+
+  if (currentExpiresAt && currentExpiresAt > now) {
+    // Extend existing boost by durationMs
+    const newExpiry = new Date(currentExpiresAt.getTime() + durationMs);
+    card.coinBoostExpiresAt = newExpiry;
     card.coinBoostMultiplier = multiplier;
-    card.coinBoostExpiresAt = new Date(Date.now() + durationMs);
     await card.save();
+
     console.log(
-        `Applied coin boost ×${multiplier} for ${durationMs} ms on card #${card.id}`
+      `Extended coin boost ×${multiplier} by ${durationMs}ms on card #${card.id}` +
+      ` (new expiry at ${card.coinBoostExpiresAt.toISOString()})`
     );
+    return;
+  }
+
+  // Otherwise apply new boost
+  card.coinBoostMultiplier = multiplier;
+  card.coinBoostExpiresAt = new Date(now.getTime() + durationMs);
+  await card.save();
+
+  console.log(
+    `Applied coin boost ×${multiplier} for ${durationMs}ms on card #${card.id}` +
+    ` (expires at ${card.coinBoostExpiresAt.toISOString()})`
+  );
 }
 
 /*───────────────────────────────────────────────────────────────
