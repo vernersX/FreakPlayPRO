@@ -25,6 +25,8 @@
     font-weight: 700;
     gap: 10px;
     padding: 10px;
+
+    position: relative;
 }
 
 .timeContainer {
@@ -76,4 +78,22 @@
 .teamName {
     margin: 0;
     color: rgb(255, 255, 255);
+}
+
+.leagueLogoContainer {
+    position: absolute;
+    top: 8px;
+    right: 20px;
+    width: 32px;
+    height: 32px;
+    pointer-events: none;
+    /* so the click still hits the card */
+}
+
+.leagueLogo {
+    width: 150%;
+    height: 150%;
+    object-fit: contain;
+
+    filter: brightness(0) invert(1);
 }

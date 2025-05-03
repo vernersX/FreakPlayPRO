@@ -24,7 +24,7 @@
     width: 100%;
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: top;
 }
 
 .matchInfo {
@@ -119,4 +119,16 @@
 
 p {
     margin: 0;
+}
+
+.leagueLogoContainer {
+    width: 60px;
+    height: auto;
+}
+
+.leagueLogo {
+    width: auto;
+    height: auto;
+    /* force all SVG strokes/fills to white */
+    /* filter: brightness(0) invert(1); */
 }

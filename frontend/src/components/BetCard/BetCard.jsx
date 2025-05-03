@@ -11,11 +11,21 @@ function BetCard({ bet }) {
     const { commenceTime, homeTeam, awayTeam, sportKey } = bet.Match;
     const isFinished = bet.status === 'won' || bet.status === 'lost';
 
+    // Build URL into public/SVG Logos using sportKey
+    const leagueLogoUrl = `${process.env.PUBLIC_URL}/SVG Logos/${sportKey}.svg`;
+
     return (
         <div className={styles.betCardContainer}>
             <div className={styles.betCardTop}>
                 <p>{new Date(commenceTime).toLocaleString()}</p>
-                <p>{sportKey || 'N/A'}</p>
+                <div className={styles.leagueLogoContainer}>
+                    <img
+                        src={leagueLogoUrl}
+                        alt={`${sportKey} logo`}
+                        className={styles.leagueLogo}
+                        onError={e => { e.currentTarget.style.display = 'none'; }}
+                    />
+                </div>
             </div>
             <div className={styles.matchInfo}>
                 <div className={bet.selection === 'home' ? `${styles.teamContainer} ${styles.fadingText}` : styles.teamContainer}>

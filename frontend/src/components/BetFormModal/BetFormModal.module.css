@@ -67,9 +67,11 @@
     margin-top: 30px;
 }
 
-.leagueLogoContainer svg {
+.leagueLogoModal {
     width: 100px;
-    height: 100px;
+    height: auto;
+    /* force all SVG strokes/fills to white */
+    filter: brightness(0) invert(1);
 }
 
 .gameContainer {
@@ -466,3 +468,4 @@ hr {
 .slideDown {
     animation: slideDown 0.3s ease forwards;
 }
+
