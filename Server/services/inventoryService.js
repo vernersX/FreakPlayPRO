@@ -15,7 +15,24 @@ async function consumeInventoryItem(inventoryItem, qty = 1) {
 }
 
 async function listUserCards(userId) {
-    return Card.findAll({ where: { userId } });
+    const cards = await Card.findAll({ where: { userId } });
+    const now = new Date();
+
+    return cards.map(card => {
+        // plain data so we can mutate baseValue without affecting the DB model instance
+        const data = card.get({ plain: true });
+
+        // if a boost is active, apply it
+        if (
+            data.coinBoostMultiplier > 1 &&
+            data.coinBoostExpiresAt &&
+            new Date(data.coinBoostExpiresAt) > now
+        ) {
+            data.baseValue = data.baseValue * data.coinBoostMultiplier;
+        }
+
+        return data;
+    });
 }
 
 async function listUserItems(userTelegramId) {
