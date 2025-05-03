@@ -142,19 +142,8 @@ export default function BetFormModal({ game, telegramId, onClose, onBetSuccess, 
 
     // compute totals
     const totalValue = selected.reduce((sum, id) => {
-        const c = cards.find(x => x.id === id);
-        if (!c) return sum;
-
-        // detect active boost
-        const boostActive =
-            c.coinBoostMultiplier > 1 &&
-            c.coinBoostExpiresAt &&
-            new Date(c.coinBoostExpiresAt) > Date.now();
-        const effectiveValue = boostActive
-            ? c.baseValue * c.coinBoostMultiplier
-            : c.baseValue;
-
-        return sum + effectiveValue;
+        const card = cards.find(c => c.id === id);
+        return card ? sum + card.baseValue : sum;
     }, 0);
 
     const odds = getOdds(selection, game);
