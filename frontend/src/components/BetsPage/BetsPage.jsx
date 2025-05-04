@@ -1,8 +1,7 @@
 // frontend/src/components/BetsPage/BetsPage.jsx
-
 import React, { useEffect, useState } from 'react';
-import { API_BASE_URL } from '../../config';                 // your base URL :contentReference[oaicite:0]{index=0}
-import BetCard from '../BetCard/BetCard';                   // reuse your BetCard component :contentReference[oaicite:1]{index=1}
+import { API_BASE_URL } from '../../config';
+import BetCard from '../BetCard/BetCard';
 
 export default function BetsPage({ telegramId }) {
     const [pendingBets, setPendingBets] = useState([]);
@@ -49,14 +48,13 @@ export default function BetsPage({ telegramId }) {
         return <div>Loading your bets...</div>;
     }
 
-    // No bets at all
     if (pendingBets.length === 0 && historyBets.length === 0) {
         return <div>You have no bets yet.</div>;
     }
 
     return (
         <div style={{ padding: '16px' }}>
-            {/* Active Bets */}
+            {/* Active Bets (newest first) */}
             {pendingBets.length > 0 && (
                 <>
                     <h2>My Active Bets</h2>
@@ -68,14 +66,16 @@ export default function BetsPage({ telegramId }) {
                             marginBottom: '24px'
                         }}
                     >
-                        {pendingBets.map(bet => (
-                            <BetCard key={bet.id} bet={bet} />
-                        ))}
+                        {[...pendingBets]
+                            .reverse()  // newest at the top
+                            .map(bet => (
+                                <BetCard key={bet.id} bet={bet} />
+                            ))}
                     </div>
                 </>
             )}
 
-            {/* Past Bets */}
+            {/* Past Bets (newest first) */}
             {historyBets.length > 0 && (
                 <>
                     <h2>Past Bets</h2>
@@ -86,9 +86,11 @@ export default function BetsPage({ telegramId }) {
                             gap: '12px'
                         }}
                     >
-                        {historyBets.map(bet => (
-                            <BetCard key={bet.id} bet={bet} />
-                        ))}
+                        {[...historyBets]
+                            .reverse()  // newest at the top
+                            .map(bet => (
+                                <BetCard key={bet.id} bet={bet} />
+                            ))}
                     </div>
                 </>
             )}

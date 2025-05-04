@@ -2,7 +2,7 @@
 import React from 'react';
 import styles from './CardSummary.module.css';
 import CardWithCooldown from '../CardWithCooldown/CardWithCooldown';
-
+import { Link } from 'react-router-dom';
 
 function CardSummary({ card }) {
     const boosted =
@@ -20,21 +20,30 @@ function CardSummary({ card }) {
             {/* <p>
                 <strong>ID:</strong> {card.id}
             </p> */}
-            <p>
-                <strong>Rarity:</strong> {card.rarity}
-            </p>
-            <p>
-                <strong>Base Value:</strong> {card.baseValue}
-            </p>
-            {/* <p>
-                <strong>Lives:</strong> {card.lives}/{card.maxLives}
-            </p> */}
-            <p>
-                <strong>Win Streak:</strong> {card.winStreak}
-            </p>
-            <p>
-                <strong>Status:</strong> {card.isLocked ? 'In Use' : 'Available'}
-            </p>
+            <section className={styles.cardInfo}>
+                <p>
+                    <span>Rarity:</span> <span>{card.rarity.charAt(0).toUpperCase() + card.rarity.slice(1).toLowerCase()}</span>
+                </p>
+                <p>
+                    <span>Base Value:</span> <span>{card.baseValue}</span>
+                </p>
+                <p>
+                    <span>Win Streak:</span> <span>{card.winStreak}</span>
+                </p>
+                <p>
+                    <span>Status:</span> <span>{card.isLocked ? 'In Use' : 'Available'}</span>
+                </p>
+                <p>
+                    <span>Boost Active:</span> <span>{boosted ? "Yes" : "No"}</span>
+                </p>
+            </section>
+            <section className={styles.buttonSection}>
+                <Link to="/market">
+                    <button className={styles.buyButton}>
+                        Buy More Balls
+                    </button>
+                </Link>
+            </section>
         </div>
     );
 }

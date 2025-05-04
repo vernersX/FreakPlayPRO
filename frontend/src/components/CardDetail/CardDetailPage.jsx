@@ -52,6 +52,7 @@ function CardDetailPage() {
                     Owners
                 </button>
             </div>
+            <hr />
             <div className={styles.tabContent}>
                 {activeTab === 'summary' && <CardSummary card={cardData.card} />}
                 {activeTab === 'matchHistory' && (
