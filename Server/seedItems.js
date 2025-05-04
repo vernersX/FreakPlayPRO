@@ -42,8 +42,9 @@ async function seedItems() {
                 type: 'stopwatch_bronze',
                 metadata: {
                     price: 30,
-                    description: 'Speeds up cooldowns by 1.5× for next use.',
+                    description: 'Speeds up cooldowns of all cards by 1.5× for next 24h.',
                     multiplier: 1.5,
+                    durationMs: 24 * 60 * 60 * 1000, // 24h in ms
                     imageUrl: '/item-imgs/StopwatchBronze.png'
                 },
             },
@@ -51,8 +52,9 @@ async function seedItems() {
                 type: 'stopwatch_silver',
                 metadata: {
                     price: 50,
-                    description: 'Speeds up cooldowns by 2× for next use.',
+                    description: 'Speeds up cooldowns of all cards by 2× for next 24h.',
                     multiplier: 2.0,
+                    durationMs: 24 * 60 * 60 * 1000, // 24h in ms
                     imageUrl: '/item-imgs/StopwatchSilver.png'
                 },
             },
@@ -60,8 +62,9 @@ async function seedItems() {
                 type: 'stopwatch_gold',
                 metadata: {
                     price: 80,
-                    description: 'Speeds up cooldowns by 3× for next use.',
+                    description: 'Speeds up cooldowns of all cards by 3× for next 24h.',
                     multiplier: 3.0,
+                    durationMs: 24 * 60 * 60 * 1000, // 24h in ms
                     imageUrl: '/item-imgs/StopwatchGold.png'
                 },
             },

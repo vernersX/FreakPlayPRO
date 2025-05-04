@@ -18,6 +18,8 @@ function HomePage({ onBetSuccess, telegramId }) {
     const [activeSport, setActiveSport] = useState('');
     const [showDailyReward, setShowDailyReward] = useState(false);
     const [selectedTask, setSelectedTask] = useState(null);
+    const [dailyDay, setDailyDay] = useState(0);
+    const TOTAL_DAYS = 7;
 
 
     const tasksRef = useRef(null);
@@ -37,6 +39,19 @@ function HomePage({ onBetSuccess, telegramId }) {
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, []);
+
+    // Fetch only currentDay from DailyRewardModal endpoint
+    useEffect(() => {
+        if (!telegramId) return;
+        fetch(`${API_BASE_URL}/api/daily-reward/status/${telegramId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (typeof data.rewardDay === 'number') {
+                    setDailyDay(data.rewardDay);
+                }
+            })
+            .catch(err => console.error('Failed to fetch daily reward day:', err));
+    }, [telegramId]);
 
     function handleSelectTask(task) {
         // If the user clicks the same task again, we can either keep it selected or toggle it off
@@ -96,12 +111,18 @@ function HomePage({ onBetSuccess, telegramId }) {
                     Invite friends
                 </div>
                 <div
-                    className={`${styles.taskItem} ${selectedTask === 'daily' ? styles.selected : ''}`}
-                    onClick={() => handleSelectTask('daily')}
-                >
-                    <img src={dailyIcon} alt='daily icon' />
-                    Daily tasks 0/5
-                </div>
+          className={`${styles.taskItem} ${selectedTask === 'daily' ? styles.selected : ''}`}
+          onClick={() => handleSelectTask('daily')}
+        >
+          <img src={dailyIcon} alt='daily reward' />
+          {`Daily Reward ${dailyDay}/${TOTAL_DAYS}`}
+        </div>
+        {showDailyReward && (
+          <DailyRewardModal
+            telegramId={telegramId}
+            onClose={() => setShowDailyReward(false)}
+          />
+        )}
 
                 {/* Modal for daily reward */}
                 {showDailyReward && (

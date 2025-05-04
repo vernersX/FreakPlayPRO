@@ -4,6 +4,8 @@ const axios = require('axios');
 const { models } = require('../db/init');
 const { Op } = require('sequelize');
 const { Match, Sport } = models;
+const { computeCooldown } = require('./cooldownService');
+
 
 // Helper to parse odds from API response
 function parseOdds(matchFromApi) {
@@ -211,8 +213,15 @@ async function resolveMatches() {
                 } else {
                   // Loss logic
                   card.winStreak = 0;
-                  card.isLocked = false;
-                  card.cooldownUntil = new Date(Date.now() + 1 * 60 * 60 * 1000);
+                  card.isLocked  = false;
+            
+                  // 1 hour base cooldown in ms
+                  const baseCooldownMs    = 1 * 60 * 60 * 1000;
+                  // computeCooldown will expire any old stopwatch buff and give you the true CD
+                  const effectiveCooldown = await computeCooldown(baseCooldownMs, card);
+            
+                  // schedule next usable time using the buff-adjusted cooldown
+                  card.cooldownUntil = new Date(Date.now() + effectiveCooldown);
                 }
                 await card.save();
               }

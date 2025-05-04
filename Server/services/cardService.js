@@ -37,8 +37,30 @@ async function transferCard(cardId, fromUserId, toUserId) {
     return card;
 }
 
+/**
+ * Computes the adjusted cooldown considering any active stopwatch buffs.
+ * Resets buffs that have expired (after 24h).
+ * @param {number} baseMs - The base cooldown duration in milliseconds.
+ * @param {Card} card - The Card instance to evaluate.
+ * @returns {Promise<number>} - The effective cooldown in milliseconds.
+ */
+async function computeCooldown(baseMs, card) {
+    const now = new Date();
+  
+    // Has the stopwatch buff expired?
+    if (card.stopwatchExpiresAt && now > card.stopwatchExpiresAt) {
+      card.cooldownMultiplier     = 1.0;
+      card.stopwatchActivatedAt   = null;
+      card.stopwatchExpiresAt     = null;
+      await card.save();
+    }
+  
+    return baseMs * factor;
+  }
+
 module.exports = {
     createCard,
     transferCard,
+    computeCooldown,
     // ...other methods like updateCard, useCardForBet, etc.
 };
