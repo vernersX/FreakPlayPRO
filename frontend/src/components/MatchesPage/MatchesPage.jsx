@@ -14,7 +14,7 @@ const SPORTS_LIST = [
     { sportKey: 'soccer_epl', group: 'Soccer', displayName: 'Football', iconURL: Football },
     { sportKey: 'basketball_nba', group: 'Basketball', displayName: 'Basketball', iconURL: BasketBall },
     { sportKey: 'icehockey_nhl', group: 'Ice Hockey', displayName: 'Ice Hockey', iconURL: Hockey }, // Replace with a proper image
-    { sportKey: 'mma_mixed_martial_arts', group: 'MMA', displayName: 'MMA', iconURL: MMA },
+    { sportKey: 'mma_mixed_martial_arts', group: 'Mixed Martial Arts', displayName: 'MMA', iconURL: MMA },
     // ... add more if needed
 ];
 

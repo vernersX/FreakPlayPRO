@@ -68,6 +68,12 @@ export default function ProfileModal({ user, onClose }) {
         setTimeout(onClose, 300);
     };
 
+    // prevent body scroll while modal open
+    useEffect(() => {
+        document.body.style.overflow = 'hidden';
+        return () => { document.body.style.overflow = ''; };
+    }, []);
+
     // Container classes include .closing when appropriate
     const containerClass = [
         styles.container,
