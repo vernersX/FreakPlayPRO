@@ -1,4 +1,3 @@
-// client/src/components/Inventory/InventoryPage.jsx
 import React, { useState } from 'react';
 import CardsTab from '../CardsTab/CardsTab';
 import ItemsTab from '../ItemsTab/ItemsTab';
@@ -13,18 +12,21 @@ function InventoryPage({ telegramId }) {
 
             <div className={styles.tabs}>
                 <button
-                    className={`${styles.inventoryButton}  ${activeTab === ' cards' ? styles.activeTab : ''}`}
+                    className={`${styles.inventoryButton} ${activeTab === 'cards' ? styles.activeTab : ''
+                        }`}
                     onClick={() => setActiveTab('cards')}
                 >
                     Cards
                 </button>
                 <button
-                    className={`${styles.inventoryButton}  ${activeTab === ' items' ? styles.activeTab : ''}`}
+                    className={`${styles.inventoryButton} ${activeTab === 'items' ? styles.activeTab : ''
+                        }`}
                     onClick={() => setActiveTab('items')}
                 >
                     Items
                 </button>
             </div>
+
             <hr />
 
             {activeTab === 'cards' ? (

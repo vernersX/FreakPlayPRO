@@ -9,8 +9,11 @@ import React, {
 import styles from './ProfileInfo.module.css';
 import { API_BASE_URL } from '../../config';
 import { formatCoins } from '../../utils/formatCoins';
-import logo from '../../imgs/logo.png';
-import profilePic from '../../imgs/ProfilePic.png';
+// import logo from '../../imgs/logo.png';
+import logo from '../../imgs/CardTrophyBall.png';
+import profilePic from '../../imgs/CardTrophyBall.png';
+
+// import profilePic from '../../imgs/ProfilePic.png';
 import ballsPic from '../../imgs/BallsCoin.png';
 import { Link } from 'react-router-dom';
 import ProfileModal from '../ProfileModal/ProfileModal';

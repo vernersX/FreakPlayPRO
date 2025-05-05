@@ -19,9 +19,9 @@ function CardItem({ card }) {
                 className={styles.cardImg}
             />
             <div>
-                <p>Rarity: {card.rarity}</p>
+                {/* <p>Rarity: {card.rarity}</p>
                 <p>Base Value: {card.baseValue}</p>
-                <p>Win Streak: {card.winStreak}</p>
+                <p>Win Streak: {card.winStreak}</p> */}
                 <p>Status: {card.isLocked ? 'In Use' : 'Available'}</p>
             </div>
         </div>

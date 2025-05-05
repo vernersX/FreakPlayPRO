@@ -108,21 +108,21 @@ function HomePage({ onBetSuccess, telegramId }) {
                 <div className={`${styles.taskItem} ${selectedTask === 'invite' ? styles.selected : ''
                     }`} onClick={() => handleSelectTask('invite')}>
                     <img src={friendsIcon} alt='friends icon' />
-                    Invite friends
+                    <p>Invite friends</p>
                 </div>
                 <div
-          className={`${styles.taskItem} ${selectedTask === 'daily' ? styles.selected : ''}`}
-          onClick={() => handleSelectTask('daily')}
-        >
-          <img src={dailyIcon} alt='daily reward' />
-          {`Daily Reward ${dailyDay}/${TOTAL_DAYS}`}
-        </div>
-        {showDailyReward && (
-          <DailyRewardModal
-            telegramId={telegramId}
-            onClose={() => setShowDailyReward(false)}
-          />
-        )}
+                    className={`${styles.taskItem} ${selectedTask === 'daily' ? styles.selected : ''}`}
+                    onClick={() => handleSelectTask('daily')}
+                >
+                    <img src={dailyIcon} alt='daily reward' />
+                    <p>{`Daily Reward ${dailyDay}/${TOTAL_DAYS}`}</p>
+                </div>
+                {showDailyReward && (
+                    <DailyRewardModal
+                        telegramId={telegramId}
+                        onClose={() => setShowDailyReward(false)}
+                    />
+                )}
 
                 {/* Modal for daily reward */}
                 {showDailyReward && (
@@ -131,7 +131,7 @@ function HomePage({ onBetSuccess, telegramId }) {
                 <div className={`${styles.taskItem} ${selectedTask === 'weekly' ? styles.selected : ''
                     }`} onClick={() => handleSelectTask('weekly')}>
                     <img src={weeklyIcon} alt='friends icon' />
-                    Weekly tasks 0/7
+                    <p>Weekly tasks 0/7</p>
                 </div>
             </div>
             <div>

@@ -1,30 +1,54 @@
 .inventoryPage {
     width: 100%;
-    padding: 0 20px 10px;
+    padding: 0 20px;
     box-sizing: border-box;
-    height: 100%;
 }
 
 .tabs {
     display: flex;
     flex-direction: row;
-    gap: 15px;
-
 }
 
 .inventoryButton {
-    font-family: "Montserrat", sans-serif;
+    position: relative;
     background: none;
     border: none;
     outline: none;
     color: white;
-    font-size: 16px;
+    font-family: "Montserrat", sans-serif;
+    font-size: 18px;
     font-weight: 500;
+    padding: 8px 8px;
+    margin-bottom: 0;
+    cursor: pointer;
+    transition: color 0.3s;
 }
+
+.inventoryButton::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    width: 100%;
+    height: 3px;
+    background-color: rgb(255, 37, 37);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.inventoryButton:hover::after,
+.inventoryButton:focus::after,
+.activeTab::after {
+    opacity: 1;
+}
+
+.activeTab {}
+
 
 hr {
     border: rgb(111, 59, 59) 1px solid;
     margin-bottom: 20px;
+    margin-top: 0px;
 }
 
 .cardsGrid {
@@ -34,6 +58,4 @@ hr {
     gap: 10px;
 }
 
-.cardContainer {
-}
-
+.cardContainer {}

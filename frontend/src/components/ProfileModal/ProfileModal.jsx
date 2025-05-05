@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import styles from './ProfileModal.module.css';
-import profileDefault from '../../imgs/ProfilePic.png';
+// import profileDefault from '../../imgs/ProfilePic.png';
+import profileDefault from '../../imgs/CardTrophyBall.png';
+
 import { Link, useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../../config';
 import CardItem from '../CardItem/CardItem';

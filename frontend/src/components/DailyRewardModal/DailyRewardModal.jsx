@@ -6,9 +6,9 @@ import profileDefault from '../../imgs/ProfilePic.png';
 
 export default function DailyRewardModal({ telegramId, user = {}, onClose }) {
   // --- State for reward status ---
-  const [currentDay, setCurrentDay]   = useState(0);
+  const [currentDay, setCurrentDay] = useState(0);
   const [lastClaimed, setLastClaimed] = useState(null);
-  const [loading, setLoading]         = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // --- Fetch current rewardDay & lastClaimedDate on mount ---
   useEffect(() => {
@@ -42,13 +42,13 @@ export default function DailyRewardModal({ telegramId, user = {}, onClose }) {
 
   // --- Mapping of day → reward metadata ---
   const dailyRewards = {
-    1: { name: 'Refill Lives',     icon: '/item-imgs/AirPump.png' },
-    2: { name: 'Shield',           icon: '/item-imgs/Shield.png' },
+    1: { name: 'Refill Lives', icon: '/item-imgs/AirPump.png' },
+    2: { name: 'Shield', icon: '/item-imgs/Shield.png' },
     3: { name: 'Stopwatch Bronze', icon: '/item-imgs/StopwatchBronze.png' },
     4: { name: 'Stopwatch Silver', icon: '/item-imgs/StopwatchSilver.png' },
-    5: { name: 'Stopwatch Gold',   icon: '/item-imgs/StopwatchGold.png' },
-    6: { name: 'Coin Boost',       icon: '/item-imgs/CoinBooster.png' },
-    7: { name: 'Ball Merge',       icon: '/item-imgs/BallMerge.png' },
+    5: { name: 'Stopwatch Gold', icon: '/item-imgs/StopwatchGold.png' },
+    6: { name: 'Coin Boost', icon: '/item-imgs/CoinBooster.png' },
+    7: { name: 'Ball Merge', icon: '/item-imgs/BallMerge.png' },
   };
 
   // --- Compute fill percentage (out of 7 days) ---
@@ -154,8 +154,8 @@ export default function DailyRewardModal({ telegramId, user = {}, onClose }) {
             {alreadyClaimedToday
               ? 'Already Claimed'
               : loading
-              ? 'Claiming…'
-              : 'Claim Reward'}
+                ? 'Claiming…'
+                : 'Claim Reward'}
           </button>
         </div>
       </div>

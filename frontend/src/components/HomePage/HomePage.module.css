@@ -53,6 +53,10 @@
     box-shadow: 0 0 12px 4px rgba(246, 6, 30, 0.3);
 }
 
+.taskItem p {
+    transform: translateY(-10px);
+}
+
 
 .navLinks {
     display: flex;

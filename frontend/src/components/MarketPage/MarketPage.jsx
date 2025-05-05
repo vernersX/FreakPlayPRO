@@ -1,88 +1,126 @@
 // client/src/components/Marketplace/MarketplacePage.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { API_BASE_URL } from '../../config';
 import styles from './MarketPage.module.css';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 function MarketPage({ telegramId, onPurchase }) {
+    const [activeTab, setActiveTab] = useState('All Items');
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [purchaseStatus, setPurchaseStatus] = useState(null);
 
-    console.log('telegramId in MarketplacePage:', telegramId);
-
     useEffect(() => {
         fetch(`${API_BASE_URL}/api/marketplace/items`)
-            .then((res) => res.json())
-            .then((data) => {
+            .then(res => res.json())
+            .then(data => {
                 setItems(data);
                 setLoading(false);
             })
-            .catch((err) => {
-                console.error("Error fetching marketplace items:", err);
+            .catch(err => {
+                console.error('Error fetching marketplace items:', err);
                 setLoading(false);
             });
     }, []);
 
+    // Get only the items we should display based on activeTab
+    const filteredItems = useMemo(() => {
+        const key = activeTab.toLowerCase();
+        if (key === 'boxes') {
+            return items.filter(item =>
+                item.type.toLowerCase().includes('box')
+            );
+        }
+        if (key === 'consumables') {
+            return items.filter(item =>
+                !item.type.toLowerCase().includes('box')
+            );
+        }
+        // "all items"
+        return items;
+    }, [items, activeTab]);
+
     function handlePurchase(itemId) {
-        // Reset any previous status
         setPurchaseStatus(null);
         fetch(`${API_BASE_URL}/api/marketplace/buy`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                telegramId: telegramId,
-                itemId: itemId,
+                telegramId,
+                itemId,
                 quantity: 1,
             }),
         })
-            .then((res) => res.json())
-            .then((data) => {
+            .then(res => res.json())
+            .then(data => {
                 if (data.error) {
                     setPurchaseStatus(`Error: ${data.error}`);
+                    toast.error(data.error);
                 } else {
-                    setPurchaseStatus("Purchase successful!");
-                    toast.success("Purchase successful!");
-                    if (onPurchase) onPurchase();
+                    setPurchaseStatus('Purchase successful!');
+                    toast.success('Purchase successful!');
+                    onPurchase?.();
                 }
             })
-            .catch((err) => {
-                console.error("Error purchasing item:", err);
-                setPurchaseStatus("Error processing purchase.");
-                toast.error("Error processing purchase.");
+            .catch(err => {
+                console.error('Error purchasing item:', err);
+                setPurchaseStatus('Error processing purchase.');
+                toast.error('Error processing purchase.');
             });
     }
 
     return (
         <div className={styles.marketplacePage}>
             <h2 className={styles.title}>Marketplace</h2>
+
             <div className={styles.itemFilterContainer}>
-                <div className={styles.itemFilter}>All Items</div>
-                <div className={styles.itemFilter}>Mystery Boxes</div>
-                <div className={styles.itemFilter}>Consumables</div>
+                <div
+                    className={`${styles.itemFilter} ${activeTab === 'All Items' ? styles.activeTab : ''
+                        }`}
+                    onClick={() => setActiveTab('All Items')}
+                >
+                    All Items
+                </div>
+                <div
+                    className={`${styles.itemFilter} ${activeTab === 'Boxes' ? styles.activeTab : ''
+                        }`}
+                    onClick={() => setActiveTab('Boxes')}
+                >
+                    Mystery Boxes
+                </div>
+                <div
+                    className={`${styles.itemFilter} ${activeTab === 'Consumables' ? styles.activeTab : ''
+                        }`}
+                    onClick={() => setActiveTab('Consumables')}
+                >
+                    Consumables
+                </div>
             </div>
+
+            <hr />
+
             {loading ? (
                 <p>Loading items...</p>
-            ) : items.length === 0 ? (
+            ) : filteredItems.length === 0 ? (
                 <p>No items available in the marketplace.</p>
             ) : (
                 <div className={styles.itemList}>
-                    {items.map((item) => (
+                    {filteredItems.map(item => (
                         <div className={styles.itemContainer} key={item.id}>
                             <div className={styles.itemTopContainer}>
                                 <h3>{item.type}</h3>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none">
-                                    <mask id="mask0_408_634" style={{maskType: 'luminance'}} maskUnits="userSpaceOnUse" x="0" y="0" width="32" height="32">
+                                    <mask id="mask0_408_634" style={{ maskType: 'luminance' }} maskUnits="userSpaceOnUse" x="0" y="0" width="32" height="32">
                                         <path d="M31.0148 0H0V31.1037H31.0148V0Z" fill="white" />
                                     </mask>
                                     <g mask="url(#mask0_408_634)">
-                                        <mask id="mask1_408_634" style={{maskType: 'luminance'}} maskUnits="userSpaceOnUse" x="0" y="0" width="32" height="32">
+                                        <mask id="mask1_408_634" style={{ maskType: 'luminance' }} maskUnits="userSpaceOnUse" x="0" y="0" width="32" height="32">
                                             <path d="M31.0148 0H0V31.1037H31.0148V0Z" fill="white" />
                                         </mask>
                                         <g mask="url(#mask1_408_634)">
                                             <g opacity="0.3">
-                                                <mask id="mask2_408_634" style={{maskType: 'luminance'}} maskUnits="userSpaceOnUse" x="-6" y="-5" width="43" height="37">
+                                                <mask id="mask2_408_634" style={{ maskType: 'luminance' }} maskUnits="userSpaceOnUse" x="-6" y="-5" width="43" height="37">
                                                     <path d="M36.5074 -4.28418H-5.49258V31.7158H36.5074V-4.28418Z" fill="white" />
                                                 </mask>
                                                 <g mask="url(#mask2_408_634)">
@@ -93,13 +131,23 @@ function MarketPage({ telegramId, onPurchase }) {
                                     </g>
                                 </svg>
                             </div>
+
                             {item.metadata?.description && <p>{item.metadata.description}</p>}
-                            <img className={styles.itemImage} src={item.metadata?.imageUrl} alt={`item` + item.metadata?.imageUrl} />
-                            <button onClick={() => handlePurchase(item.id)}>Buy for {item.metadata?.price ?? 'N/A'}</button>
+
+                            <img
+                                className={styles.itemImage}
+                                src={item.metadata?.imageUrl}
+                                alt={`item-${item.id}`}
+                            />
+
+                            <button onClick={() => handlePurchase(item.id)}>
+                                Buy for {item.metadata?.price ?? 'N/A'}
+                            </button>
                         </div>
                     ))}
                 </div>
             )}
+
             {purchaseStatus && <p>{purchaseStatus}</p>}
         </div>
     );
