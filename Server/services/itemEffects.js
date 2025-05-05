@@ -4,7 +4,7 @@
 // --------------------------------------------------------------
 const { models } = require('../db/init');
 const { InventoryItem, Item, Card } = models;
-const rarities = require('../constants/rarities');
+const { RARITY_LEVELS, RARITY_DEFINITIONS } = require('../constants/rarities');
 
 /*───────────────────────────────────────────────────────────────
  1)  Coin Boost   (needs a card)
@@ -84,51 +84,64 @@ async function refillLivesEffect(_user, card) {
  3)  Ball Merge – combine two same‑rarity cards listed in
      metadata.selectedCardIds  (NO target card argument)
 ────────────────────────────────────────────────────────────────*/
-async function ballMergeEffect(user, _card, _invItem, metadata) {
-  const pair = metadata?.selectedCardIds;
+async function ballMergeEffect(user, _unusedCard, _invItem, metadata = {}) {
+  // 1) Expect exactly two selected card IDs
+  const pair = metadata.selectedCardIds;
   if (!Array.isArray(pair) || pair.length !== 2) {
     throw new Error('ball_merge requires exactly two card IDs');
   }
 
-  // load both cards, ensure same user & same rarity
+  // 2) Load and validate the two cards
   const cards = await Card.findAll({
     where: { id: pair, userId: user.id }
   });
-  if (cards.length !== 2 || cards[0].rarity !== cards[1].rarity) {
-    throw new Error('Cards must exist and share the same rarity');
+  if (cards.length !== 2) {
+    throw new Error('Cards must exist and belong to the user');
   }
-
-  for (const card of cards) {
-    await card.reload();
-    if (card.isLocked) {
+  const baseRarity = cards[0].rarity;
+  if (!cards.every(c => c.rarity === baseRarity)) {
+    throw new Error('Both cards must share the same rarity to merge');
+  }
+  for (const c of cards) {
+    if (c.isLocked) {
       throw new Error('Cannot merge: one or more cards are currently in use');
     }
   }
 
-  // find where they sit in the ladder
-  const idx = rarities.indexOf(cards[0].rarity);
+  // 3) Determine the next rarity up the ladder
+  const idx = RARITY_LEVELS.indexOf(baseRarity);
   if (idx < 0) {
-    throw new Error(`Unknown rarity: ${cards[0].rarity}`);
+    throw new Error(`Unknown rarity: ${baseRarity}`);
   }
-  if (idx === rarities.length - 1) {
-    throw new Error('Cannot merge at highest rarity');
+  if (idx === RARITY_LEVELS.length - 1) {
+    throw new Error('Cannot merge cards of the highest rarity');
   }
+  const nextRarity = RARITY_LEVELS[idx + 1];
 
-  // compute next step
-  const nextRarity = rarities[idx + 1];
-
-  // delete the old two…
+  // 4) Remove the old cards
   await Card.destroy({ where: { id: pair } });
 
-  // …and create the new one with doubled baseValue
-  await Card.create({
-    userId: user.id,
-    rarity: nextRarity,
-    baseValue: cards[0].baseValue * 2,
-    imageURL: metadata.nextImageURL || cards[0].imageURL // optional
+  // 5) Pull the merged card’s properties from the constants
+  const def = RARITY_DEFINITIONS[nextRarity];
+
+  // 6) Create the new merged card, using def.baseValue
+  const mergedCard = await Card.create({
+    userId:                 user.id,
+    rarity:                 nextRarity,
+    baseValue:              def.baseValue,               // from constants
+    imageURL:               metadata.nextImageURL || def.imageURL,
+    baseCooldownMultiplier: def.baseCooldownMultiplier,
+    cooldownMultiplier:     1.0,
+    lives:                  cards[0].lives,
+    maxLives:               cards[0].maxLives,
   });
 
-  console.log(`Merged two ${cards[0].rarity} → one ${nextRarity}`);
+  console.log(
+    `Merged two ${baseRarity} cards into one ${nextRarity} card #${mergedCard.id}` +
+    ` (baseValue=${def.baseValue}, baseCooldownMultiplier=${def.baseCooldownMultiplier})`
+  );
+
+  return mergedCard;
 }
 
 /*───────────────────────────────────────────────────────────────

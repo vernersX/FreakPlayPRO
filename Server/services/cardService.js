@@ -2,7 +2,20 @@
 const { models } = require('../db/init');
 const { Card, CardOwnershipHistory } = models;
 
+// Base cooldown multipliers per rarity
+const RARITY_BASE = {
+    rookie:    1,
+    tactician: 3,
+    playmaker: 5,
+    striker:  10,
+    allstar:   15
+  };
+
+  
+
 async function createCard(userId, rarity, baseValue, maxLives, imageURL) {
+    // Determine the base cooldown multiplier from rarity
+  const baseCooldownMultiplier = RARITY_BASE[rarity] ?? 1;
     const newCard = await Card.create({
         userId,
         rarity,
@@ -10,6 +23,8 @@ async function createCard(userId, rarity, baseValue, maxLives, imageURL) {
         lives: maxLives,
         maxLives,
         imageURL,
+        baseCooldownMultiplier,
+        cooldownMultiplier: 1.0  // no buff active initially
     });
     // Optionally create ownership history with fromUserId = null
     await CardOwnershipHistory.create({
@@ -47,20 +62,27 @@ async function transferCard(cardId, fromUserId, toUserId) {
 async function computeCooldown(baseMs, card) {
     const now = new Date();
   
-    // Has the stopwatch buff expired?
-    if (card.stopwatchExpiresAt && now > card.stopwatchExpiresAt) {
-      card.cooldownMultiplier     = 1.0;
-      card.stopwatchActivatedAt   = null;
-      card.stopwatchExpiresAt     = null;
+    // 1) Expire any stopwatch buff
+    if (card.stopwatchExpiresAt && now > new Date(card.stopwatchExpiresAt)) {
+      // remove only the temporary buff factor
+      card.cooldownMultiplier    = 1.0;
+      card.stopwatchActivatedAt  = null;
+      card.stopwatchExpiresAt    = null;
       await card.save();
     }
   
-    return baseMs * factor;
+    // 2) Compute effective factor: base (rarity) × buff (inverse speed)
+    const baseFactor      = card.baseCooldownMultiplier ?? 1.0;
+    const buffFactor      = card.cooldownMultiplier      ?? 1.0;
+    const effectiveFactor = baseFactor * buffFactor;
+  
+    // 3) Return adjusted cooldown
+    return baseMs * effectiveFactor;
   }
+  
 
 module.exports = {
     createCard,
     transferCard,
     computeCooldown,
-    // ...other methods like updateCard, useCardForBet, etc.
 };
