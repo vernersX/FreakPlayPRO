@@ -1,65 +1,60 @@
-// services/cardService.js
-const { models } = require('../db/init');
-const { Card, CardOwnershipHistory } = models;
-
-// Base cooldown multipliers per rarity
-const RARITY_BASE = {
-    rookie:    1,
-    tactician: 3,
-    playmaker: 5,
-    striker:  10,
-    allstar:   15
-  };
-
-  
-
+/**
+ * Create a new card for a user, initializing its base & active cooldown multipliers.
+ */
 async function createCard(userId, rarity, baseValue, maxLives, imageURL) {
-    // Determine the base cooldown multiplier from rarity
-  const baseCooldownMultiplier = RARITY_BASE[rarity] ?? 1;
+    // Pull the base multiplier from our central definitions
+    const def = RARITY_DEFINITIONS[rarity] || {};
+    const baseCooldownMultiplier = def.baseCooldownMultiplier ?? 1;
+  
     const newCard = await Card.create({
-        userId,
-        rarity,
-        baseValue,
-        lives: maxLives,
-        maxLives,
-        imageURL,
-        baseCooldownMultiplier,
-        cooldownMultiplier: 1.0  // no buff active initially
+      userId,
+      rarity,
+      baseValue,
+      lives:    maxLives,
+      maxLives,
+      imageURL,
+      baseCooldownMultiplier,
+      cooldownMultiplier: 1.0  // no buff active initially
     });
-    // Optionally create ownership history with fromUserId = null
+  
+    // Record ownership history
     await CardOwnershipHistory.create({
-        cardId: newCard.id,
-        fromUserId: null,
-        toUserId: userId,
+      cardId:      newCard.id,
+      fromUserId:  null,
+      toUserId:    userId,
     });
+  
     return newCard;
-}
-
-async function transferCard(cardId, fromUserId, toUserId) {
+  }
+  
+  /**
+   * Transfer a card between users.
+   */
+  async function transferCard(cardId, fromUserId, toUserId) {
     const card = await Card.findByPk(cardId);
     if (!card) throw new Error('Card not found');
     if (card.userId !== fromUserId) throw new Error('You do not own this card');
-
+  
     card.userId = toUserId;
     await card.save();
-
+  
     await CardOwnershipHistory.create({
-        cardId,
-        fromUserId,
-        toUserId,
+      cardId,
+      fromUserId,
+      toUserId,
     });
-
+  
     return card;
-}
-
-/**
- * Computes the adjusted cooldown considering any active stopwatch buffs.
- * Resets buffs that have expired (after 24h).
- * @param {number} baseMs - The base cooldown duration in milliseconds.
- * @param {Card} card - The Card instance to evaluate.
- * @returns {Promise<number>} - The effective cooldown in milliseconds.
- */
-async function computeCooldown(baseMs, card) {
+  }
+  
+  /**
+   * Computes the adjusted cooldown considering any active stopwatch buffs.
+   * Resets buffs that have expired (after 24h).
+   * @param {number} baseMs - The base cooldown duration in milliseconds.
+   * @param {Card} card - The Card instance to evaluate.
+   * @returns {Promise<number>} - The effective cooldown in milliseconds.
+   */
+  async function computeCooldown(baseMs, card) {
     const now = new Date();
   
     // 1) Expire any stopwatch buff
@@ -80,9 +75,8 @@ async function computeCooldown(baseMs, card) {
     return baseMs * effectiveFactor;
   }
   
-
-module.exports = {
+  module.exports = {
     createCard,
     transferCard,
     computeCooldown,
-};
+  };
