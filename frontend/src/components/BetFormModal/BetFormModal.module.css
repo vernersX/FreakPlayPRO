@@ -77,7 +77,7 @@
 .gameContainer {
     display: flex;
     flex-direction: row;
-    gap: 20px;
+    gap: 40px;
     justify-content: center;
     align-items: center;
 
