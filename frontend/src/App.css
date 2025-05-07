@@ -1,3 +1,11 @@
+html {
+  /* guarantee the scrollbar gutter is always reserved */
+  overflow-y: scroll;
+  /* if you want extra future-proofing you can also do:
+     scrollbar-gutter: stable both-edges;
+  */
+}
+
 .app-container {
   display: flex;
   align-items: center;
