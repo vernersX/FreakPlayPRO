@@ -1,6 +1,6 @@
 // db/init.js
 require('dotenv').config();
-const { Sequelize } = require('sequelize');
+const { Sequelize, DataTypes } = require('sequelize');    // ← pull in DataTypes
 const config = require('../config/config');
 
 // Import models
@@ -15,6 +15,8 @@ const AuctionModel = require('./models/Auction');
 const BidModel = require('./models/Bid');
 const SportModel = require('./models/Sport');
 const LeagueModel = require('./models/League')
+const WeeklyTaskDefinitionModel = require('./models/WeeklyTaskDefinition');
+const UserWeeklyTaskModel = require('./models/UserWeeklyTask');
 
 const sequelize = new Sequelize(config.DB_NAME, config.DB_USER, config.DB_PASS, {
     host: config.DB_HOST,
@@ -35,6 +37,8 @@ const Auction = AuctionModel(sequelize);
 const Bid = BidModel(sequelize);
 const Sport = SportModel(sequelize);
 const League = LeagueModel(sequelize);
+const WeeklyTaskDefinition = WeeklyTaskDefinitionModel(sequelize, DataTypes);
+const UserWeeklyTask = UserWeeklyTaskModel(sequelize, DataTypes);
 
 // Setup associations with explicit foreign key options
 User.hasMany(Bet, {
@@ -125,6 +129,23 @@ Bid.belongsTo(User, {
 
 User.hasMany(Bid);
 
+WeeklyTaskDefinition.hasMany(UserWeeklyTask, {
+    foreignKey: 'definitionId',
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE'
+});
+UserWeeklyTask.belongsTo(WeeklyTaskDefinition, {
+    foreignKey: 'definitionId',
+    as: 'definition'
+});
+UserWeeklyTask.belongsTo(User, {
+    foreignKey: 'userId',
+    as: 'user',
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE'
+});
+
+
 // Test DB connection
 async function connectToDB() {
     try {
@@ -164,5 +185,7 @@ module.exports = {
         Bid,
         Sport,
         League,
+        WeeklyTaskDefinition,
+        UserWeeklyTask
     },
 };

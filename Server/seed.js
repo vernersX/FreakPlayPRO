@@ -2,26 +2,27 @@
 
 require('dotenv').config();
 const { connectToDB, syncModels, models } = require('./db/init');
-const { User, Card } = models;
+const { User, Card, WeeklyTaskDefinition } = models;
 const { RARITY_LEVELS, RARITY_DEFINITIONS } = require('./constants/rarities');
+const definitions = require('./constants/weeklyTaskDefinitions');
 
 async function seed() {
   try {
-    // 1) connect & sync all models (drops tables in dev if syncModels does that)
+    // 1) connect & sync all models (drops tables if configured)
     await connectToDB();
     await syncModels();
 
     // 2) create or find a demo user
     const [theUser] = await User.findOrCreate({
-      where:    { telegramId: '926460821' },
+      where: { telegramId: '926460821' },
       defaults: { username: 'BossCaptain' }
     });
 
     // 3) build the full rarity ladder from our shared constants
     const cardTypes = RARITY_LEVELS.map(rarity => ({
       rarity,
-      baseValue:              RARITY_DEFINITIONS[rarity].baseValue,
-      imageURL:               RARITY_DEFINITIONS[rarity].imageURL,
+      baseValue: RARITY_DEFINITIONS[rarity].baseValue,
+      imageURL: RARITY_DEFINITIONS[rarity].imageURL,
       baseCooldownMultiplier: RARITY_DEFINITIONS[rarity].baseCooldownMultiplier,
     }));
 
@@ -33,21 +34,34 @@ async function seed() {
         ];
 
         await Card.create({
-          userId:                 user.id,
-          rarity:                 randomType.rarity,
-          baseValue:              randomType.baseValue,
-          imageURL:               randomType.imageURL,
+          userId: user.id,
+          rarity: randomType.rarity,
+          baseValue: randomType.baseValue,
+          imageURL: randomType.imageURL,
           baseCooldownMultiplier: randomType.baseCooldownMultiplier,
-          cooldownMultiplier:     1.0,   // no active buff on fresh cards
-          cooldownUntil:          null,
-          winStreak:              0,
-          isLocked:               false,
+          cooldownMultiplier: 1.0,   // no active buff on fresh cards
+          cooldownUntil: null,
+          winStreak: 0,
+          isLocked: false,
         });
       }
     }
 
     // 5) seed 6 cards onto our demo user
     await createRandomCardsForUser(theUser, 6);
+
+    // 6) seed weekly task definitions
+    await WeeklyTaskDefinition.bulkCreate(definitions, {
+      updateOnDuplicate: [
+        'title',
+        'description',
+        'criteria',
+        'rewardType',
+        'rewardValue',
+        'displayOrder',
+        'updatedAt'
+      ]
+    });
 
     console.log('✅ Seeding complete!');
     process.exit(0);

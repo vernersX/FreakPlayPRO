@@ -5,6 +5,7 @@ const { models } = require('../db/init');
 const { Op } = require('sequelize');
 const { Match, Sport } = models;
 const { computeCooldown } = require('./cooldownService');
+const { trackTaskProgress, resetTaskProgress } = require('../services/weeklyTaskService');
 
 
 // Helper to parse odds from API response
@@ -182,10 +183,26 @@ async function resolveMatches() {
                 if (user) {
                   user.coins += bet.payout;
                   await user.save();
+                  await trackTaskProgress(bet.userId, 'winBet', 1);
+                  await trackTaskProgress(bet.userId, 'winBetStreak', 1);
+
+                  // 4) Finally, count how many cards were used
+                  const numCards = Array.isArray(bet.cardIds)
+                    ? bet.cardIds.length
+                    : 0;
+
+                  // And only track the corresponding task
+                  if (numCards === 2) {
+                    await trackTaskProgress(bet.userId, 'winBetWith2Cards', 1);
+                  } else if (numCards === 3) {
+                    await trackTaskProgress(bet.userId, 'winBetWith3Cards', 1);
+                  }
+
                 }
               } else {
                 bet.status = 'lost';
                 bet.payout = 0;
+                await resetTaskProgress(bet.userId, 'winBetStreak');
               }
               await bet.save();
               shouldProcessCards = true;
@@ -213,13 +230,13 @@ async function resolveMatches() {
                 } else {
                   // Loss logic
                   card.winStreak = 0;
-                  card.isLocked  = false;
-            
+                  card.isLocked = false;
+
                   // 1 hour base cooldown in ms
-                  const baseCooldownMs    = 1 * 60 * 60 * 1000;
+                  const baseCooldownMs = 1 * 60 * 60 * 1000;
                   // computeCooldown will expire any old stopwatch buff and give you the true CD
                   const effectiveCooldown = await computeCooldown(baseCooldownMs, card);
-            
+
                   // schedule next usable time using the buff-adjusted cooldown
                   card.cooldownUntil = new Date(Date.now() + effectiveCooldown);
                 }

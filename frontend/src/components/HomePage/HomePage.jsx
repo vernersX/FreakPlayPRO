@@ -3,137 +3,126 @@ import React, { useEffect, useState, useRef } from 'react';
 import styles from './HomePage.module.css';
 import HorizontalMatchList from '../HorizontalMatchList/HorizontalMatchList';
 import { API_BASE_URL } from '../../config';
-import friendsIcon from '../../imgs/passports-icon.png'
-import dailyIcon from '../../imgs/gift-icon.png'
-import weeklyIcon from '../../imgs/win-cup-icon.png'
-import aiPic from '../../imgs/Live AI frame (1).png'
-import winners from '../../imgs/winners.png'
+import friendsIcon from '../../imgs/passports-icon.png';
+import dailyIcon from '../../imgs/gift-icon.png';
+import weeklyIcon from '../../imgs/win-cup-icon.png';
+import aiPic from '../../imgs/Live AI frame (1).png';
+import winners from '../../imgs/winners.png';
 import { Link } from 'react-router-dom';
 import DailyRewardModal from '../DailyRewardModal/DailyRewardModal';
-
+import WeeklyTasksModal from '../WeeklyTasksModal/WeeklyTasksModal';
 
 function HomePage({ onBetSuccess, telegramId }) {
-    const [games, setGames] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [activeSport, setActiveSport] = useState('');
-    const [showDailyReward, setShowDailyReward] = useState(false);
-    const [selectedTask, setSelectedTask] = useState(null);
-    const [dailyDay, setDailyDay] = useState(0);
-    const TOTAL_DAYS = 7;
+  const [games, setGames] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeSport, setActiveSport] = useState('');
+  const [showDailyReward, setShowDailyReward] = useState(false);
+  const [showWeeklyTasks, setShowWeeklyTasks] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [dailyDay, setDailyDay] = useState(0);
+  const TOTAL_DAYS = 7;
 
+  const tasksRef = useRef(null);
 
-    const tasksRef = useRef(null);
-
-    // When user clicks anywhere in the document, if the click is outside tasksRef,
-    // then unselect the item.
-    useEffect(() => {
-        function handleClickOutside(event) {
-            if (tasksRef.current && !tasksRef.current.contains(event.target)) {
-                setSelectedTask(null);
-            }
-        }
-
-        // Listen for clicks on the entire document
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, []);
-
-    // Fetch only currentDay from DailyRewardModal endpoint
-    useEffect(() => {
-        if (!telegramId) return;
-        fetch(`${API_BASE_URL}/api/daily-reward/status/${telegramId}`)
-            .then(res => res.json())
-            .then(data => {
-                if (typeof data.rewardDay === 'number') {
-                    setDailyDay(data.rewardDay);
-                }
-            })
-            .catch(err => console.error('Failed to fetch daily reward day:', err));
-    }, [telegramId]);
-
-    function handleSelectTask(task) {
-        // If the user clicks the same task again, we can either keep it selected or toggle it off
-        // For example, to toggle:
-        setSelectedTask(prev => (prev === task ? null : task));
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (tasksRef.current && !tasksRef.current.contains(event.target)) {
+        setSelectedTask(null);
+      }
     }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
-    useEffect(() => {
-        let url = `${API_BASE_URL}/api/matches/upcoming`;
-        if (activeSport) {
-            url += `?sportKey=${encodeURIComponent(activeSport)}`;
+  // fetch daily reward status
+  useEffect(() => {
+    if (!telegramId) return;
+    fetch(`${API_BASE_URL}/api/daily-reward/status/${telegramId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (typeof data.rewardDay === 'number') {
+          setDailyDay(data.rewardDay);
         }
-        setLoading(true);
-        fetch(url)
-            .then((res) => res.json())
-            .then((data) => {
-                const filteredData = data.filter(
-                    (match) =>
-                        match.homeOdds !== null ||
-                        match.awayOdds !== null ||
-                        match.drawOdds !== null
-                );
-                setGames(filteredData);
-                setLoading(false);
-            })
-            .catch((err) => {
-                console.error('Error fetching matches:', err);
-                setLoading(false);
-            });
-    }, [activeSport]);
+      })
+      .catch(err => console.error('Failed to fetch daily reward day:', err));
+  }, [telegramId]);
 
-    //For daily tasks
-    function handleSelectTask(task) {
-        setSelectedTask(task);
-        if (task === 'daily') {
-            setShowDailyReward(true);
-        }
-    }
+  // fetch matches
+  useEffect(() => {
+    let url = `${API_BASE_URL}/api/matches/upcoming`;
+    if (activeSport) url += `?sportKey=${encodeURIComponent(activeSport)}`;
+    setLoading(true);
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        const filtered = data.filter(
+          match => match.homeOdds !== null || match.awayOdds !== null || match.drawOdds !== null
+        );
+        setGames(filtered);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Error fetching matches:', err);
+        setLoading(false);
+      });
+  }, [activeSport]);
 
-    function handleFilter(sport) {
-        setActiveSport(sport);
-    }
+  const handleSelectTask = (task) => {
+    setSelectedTask(prev => prev === task ? null : task);
+    if (task === 'daily') setShowDailyReward(true);
+    if (task === 'weekly') setShowWeeklyTasks(true);
+  };
 
-    const now = new Date();
-    const next24Matches = games.filter((game) => {
-        const commence = new Date(game.commenceTime);
-        const diffHours = (commence - now) / (1000 * 60 * 60);
-        return diffHours >= 0 && diffHours <= 24;
-    });
+  const handleFilter = sport => setActiveSport(sport);
 
-    return (
-        <div className={styles.mainPageContainer}>
-            <div className={styles.taskContainer} ref={tasksRef}>
-                <div className={`${styles.taskItem} ${selectedTask === 'invite' ? styles.selected : ''
-                    }`} onClick={() => handleSelectTask('invite')}>
-                    <img src={friendsIcon} alt='friends icon' />
-                    <p>Invite friends</p>
-                </div>
-                <div
-                    className={`${styles.taskItem} ${selectedTask === 'daily' ? styles.selected : ''}`}
-                    onClick={() => handleSelectTask('daily')}
-                >
-                    <img src={dailyIcon} alt='daily reward' />
-                    <p>{`Daily Reward ${dailyDay}/${TOTAL_DAYS}`}</p>
-                </div>
-                {showDailyReward && (
-                    <DailyRewardModal
-                        telegramId={telegramId}
-                        onClose={() => setShowDailyReward(false)}
-                    />
-                )}
+  const now = new Date();
+  const next24Matches = games.filter(game => {
+    const commence = new Date(game.commenceTime);
+    const diffHours = (commence - now) / (1000 * 60 * 60);
+    return diffHours >= 0 && diffHours <= 24;
+  });
 
-                {/* Modal for daily reward */}
-                {showDailyReward && (
-                    <DailyRewardModal telegramId={telegramId} onClose={() => setShowDailyReward(false)} />
-                )}
-                <div className={`${styles.taskItem} ${selectedTask === 'weekly' ? styles.selected : ''
-                    }`} onClick={() => handleSelectTask('weekly')}>
-                    <img src={weeklyIcon} alt='friends icon' />
-                    <p>Weekly tasks 0/7</p>
-                </div>
-            </div>
+  return (
+    <div className={styles.mainPageContainer}>
+      <div className={styles.taskContainer} ref={tasksRef}>
+        <div
+          className={`${styles.taskItem} ${selectedTask === 'invite' ? styles.selected : ''}`}
+          onClick={() => handleSelectTask('invite')}
+        >
+          <img src={friendsIcon} alt='Invite friends' />
+          <p>Invite friends</p>
+        </div>
+
+        <div
+          className={`${styles.taskItem} ${selectedTask === 'daily' ? styles.selected : ''}`}
+          onClick={() => handleSelectTask('daily')}
+        >
+          <img src={dailyIcon} alt='Daily reward' />
+          <p>{`Daily Reward ${dailyDay}/${TOTAL_DAYS}`}</p>
+        </div>
+
+        <div
+          className={`${styles.taskItem} ${selectedTask === 'weekly' ? styles.selected : ''}`}
+          onClick={() => handleSelectTask('weekly')}
+        >
+          <img src={weeklyIcon} alt='Weekly tasks' />
+          <p>Weekly tasks 0/5</p>
+        </div>
+
+        {/* Modals */}
+        {showDailyReward && (
+          <DailyRewardModal
+            telegramId={telegramId}
+            onClose={() => setShowDailyReward(false)}
+          />
+        )}
+        {showWeeklyTasks && (
+          <WeeklyTasksModal
+            telegramId={telegramId}
+            onClose={() => setShowWeeklyTasks(false)}
+          />
+        )}
+      </div>
             <div>
                 <h1 className={styles.title}>Matches</h1>
             </div>

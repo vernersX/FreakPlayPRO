@@ -5,6 +5,7 @@
 const { models } = require('../db/init');
 const { InventoryItem, Item, Card } = models;
 const { RARITY_LEVELS, RARITY_DEFINITIONS } = require('../constants/rarities');
+const { trackTaskProgress } = require('./weeklyTaskService');
 
 /*───────────────────────────────────────────────────────────────
  1)  Coin Boost   (needs a card)
@@ -75,6 +76,7 @@ async function refillLivesEffect(_user, card) {
   // Clear the cooldown by setting it to now
   card.cooldownUntil = now;
   await card.save();
+  await trackTaskProgress(_user.id, 'useRefillItem', 1);
 
   console.log(`Cleared cooldown on card #${card.id} at ${now.toISOString()}`);
 }
@@ -136,11 +138,12 @@ async function ballMergeEffect(user, _unusedCard, _invItem, metadata = {}) {
     maxLives:               cards[0].maxLives,
   });
 
+  await trackTaskProgress(user.id, 'mergeCards', 1);
+
   console.log(
     `Merged two ${baseRarity} cards into one ${nextRarity} card #${mergedCard.id}` +
     ` (baseValue=${def.baseValue}, baseCooldownMultiplier=${def.baseCooldownMultiplier})`
   );
-
   return mergedCard;
 }
 
