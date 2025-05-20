@@ -197,6 +197,9 @@ async function resolveMatches() {
                   } else if (numCards === 3) {
                     await trackTaskProgress(bet.userId, 'winBetWith3Cards', 1);
                   }
+                  if (bet.Card.coinBoostMultiplier === 1) {
+                    await trackTaskProgress(bet.userId, 'winBetWithBoost', 1);
+                  }
 
                 }
               } else {

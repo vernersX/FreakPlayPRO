@@ -37,6 +37,9 @@ async function coinBoostEffect(_user, card, _invItem, metadata = {}) {
     card.coinBoostMultiplier = multiplier;
     card.coinBoostExpiresAt  = newExpiry;
     await card.save();
+    // Track the weekly task progress
+    await trackTaskProgress(_user.id, 'useCoinBoostItem', 1);
+
     console.log(
       `Extended coin boost ×${multiplier} by ${durationMs}ms on card #${card.id}` +
       ` (new expiry at ${newExpiry.toISOString()})`
@@ -222,8 +225,19 @@ async function stopwatchEffect(user, _unusedCard, invItem, metadata = {}) {
 ────────────────────────────────────────────────────────────────*/
 async function shieldEffect(_user, card) {
   if (!card) throw new Error('shield requires a target card');
+
+  // 1) Prevent re-using the shield on the same card
+  if (card.hasShield) {
+    throw new Error(`Card already has a shield applied`);
+  }
+
+  // 2) Apply shield and persist
   card.hasShield = true;
   await card.save();
+
+  // 3) Track the weekly task “useShieldItem” (increment by 1)
+  await trackTaskProgress(_user.id, 'useShieldItem', 1);
+
   console.log(`Shield applied to card #${card.id}`);
 }
 

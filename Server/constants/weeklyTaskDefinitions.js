@@ -74,6 +74,15 @@ module.exports = [
       rewardType:  'item',
       rewardValue: { itemKey: 'mystery_box_classic' },
       displayOrder: 7
+    },
+    {
+      key: 'use_shield_item_3x',
+      title: 'Use the shield item 3 times',
+      description: 'Use your shield item three times this week',
+      criteria:    { action: 'useShieldItem', count: 3 },
+      rewardType:  'item',
+      rewardValue: { itemKey: 'stopwatch_gold' },
+      displayOrder: 8
     }
     // …add more definitions here as needed
   ];
